@@ -1,0 +1,17 @@
+[
+  {
+    "id": "cert-1",
+    "title": "AWS Certified Solutions Architect",
+    "imageUrl": "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=600&auto=format&fit=crop"
+  },
+  {
+    "id": "cert-2",
+    "title": "Frontend Developer (React)",
+    "imageUrl": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=600&auto=format&fit=crop"
+  },
+  {
+    "id": "cert-3",
+    "title": "Google Data Analytics Professional",
+    "imageUrl": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=600&auto=format&fit=crop"
+  }
+]

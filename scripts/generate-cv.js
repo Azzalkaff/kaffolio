@@ -1,0 +1,107 @@
+const fs = require('fs');
+const path = require('path');
+
+/**
+ * Script untuk membuat file PDF (ATS-Friendly) secara native tanpa library eksternal.
+ * Sesuai prinsip KISS (Keep It Simple, Stupid) dan SOLID.
+ */
+
+// Konten teks dari CV Kaffa Elghifari
+const streamContent = `BT
+/F1 24 Tf
+50 780 Td
+(Kaffa Elghifari) Tj
+0 -30 Td
+/F1 14 Tf
+(Senior Full-Stack Engineer) Tj
+0 -20 Td
+/F1 12 Tf
+(Email: contact@kaffolio.com | Location: Indonesia) Tj
+0 -40 Td
+/F1 16 Tf
+(PROFESSIONAL SUMMARY) Tj
+0 -20 Td
+/F1 12 Tf
+(Passionate software engineer with over 4 years of experience) Tj
+0 -15 Td
+(building scalable, accessible, and performant web applications.) Tj
+0 -15 Td
+(Proven track record in designing microservices and clean architecture.) Tj
+0 -40 Td
+/F1 16 Tf
+(CORE COMPETENCIES & SKILLS) Tj
+0 -20 Td
+/F1 12 Tf
+(- Frontend: React, Next.js, TypeScript, Tailwind CSS, Vue.js) Tj
+0 -15 Td
+(- Backend: Node.js, Express, Python, MongoDB, PostgreSQL) Tj
+0 -15 Td
+(- DevOps & Cloud: AWS, Docker, Kubernetes, Linux, CI/CD) Tj
+0 -40 Td
+/F1 16 Tf
+(WORK EXPERIENCE) Tj
+0 -20 Td
+/F1 12 Tf
+(Senior Full-Stack Engineer | Tech Corp | 2022 - Present) Tj
+0 -15 Td
+(- Designed and implemented high-performance microservices architecture.) Tj
+0 -15 Td
+(- Led a team of 5 engineers to deliver critical enterprise features.) Tj
+0 -15 Td
+(- Reduced server costs by 30% through Docker and AWS optimization.) Tj
+0 -30 Td
+(Software Engineer | Startup Inc | 2020 - 2022) Tj
+0 -15 Td
+(- Developed scalable REST APIs using Node.js and PostgreSQL.) Tj
+0 -15 Td
+(- Migrated legacy monolithic system to modern Next.js ecosystem.) Tj
+0 -40 Td
+/F1 16 Tf
+(EDUCATION) Tj
+0 -20 Td
+/F1 12 Tf
+(Bachelor of Computer Science) Tj
+ET`;
+
+// Panjang stream konten dalam bytes
+const streamLength = Buffer.byteLength(streamContent, 'utf8');
+
+// Struktur raw PDF
+const pdfRaw = `%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 4 0 R >> >> /MediaBox [0 0 612 842] /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length ${streamLength} >>
+stream
+${streamContent}
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000227 00000 n 
+0000000315 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+424
+%%EOF`;
+
+// Tulis ke file public
+const outputPath = path.join(__dirname, '../public/Kaffa_Elghifari_CV.pdf');
+fs.writeFileSync(outputPath, pdfRaw, 'utf8');
+
+console.log('✅ Berhasil membuat Kaffa_Elghifari_CV.pdf (ATS-Friendly) di folder public/');

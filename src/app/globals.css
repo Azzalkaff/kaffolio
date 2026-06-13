@@ -1,0 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap');
+@import 'tailwindcss';
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-primary: 'Nunito', sans-serif;
+  --font-secondary: 'Nunito', sans-serif;
+
+  /* Semantic Theme Variables */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  /* Brand Colors */
+  --color-primary: #82A760;
+  --color-primary-hover: #6F8F52;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: var(--foreground); /* Fallback for legacy classes */
+}
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: #FCFCF8;
+  --foreground: #1C2B21;
+  --card: #FFFFFF;
+  --card-foreground: #2B4031;
+  --border: #E8EFEA;
+  --muted: #F3F7F4;
+  --muted-foreground: #5C7C64;
+}
+
+.dark {
+  --background: #0D1611;
+  --foreground: #EAF2ED;
+  --card: #15221B;
+  --card-foreground: #EAF2ED;
+  --border: #253B2D;
+  --muted: #1A2B21;
+  --muted-foreground: #8FA696;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-primary);
+  /* Global transition for smooth theme switching */
+  transition-property: color, background-color, border-color;
+  transition-duration: 300ms;
+}
+
+h1,
+h2 {
+  font-family: var(--font-secondary);
+}
