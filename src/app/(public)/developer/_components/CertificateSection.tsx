@@ -25,7 +25,7 @@ function CertificateCard({
   title,
   imageUrl,
   onImageClick,
-}: CertificateProps): JSX.Element {
+}: CertificateProps) {
   return (
     <div className="bg-card text-card-foreground border border-border rounded-xl hover:border-primary transition-colors shadow-sm flex flex-col h-full overflow-hidden group">
       {/* Image Container */}
@@ -55,7 +55,7 @@ function CertificateCard({
  *
  * @returns {JSX.Element} Bagian antarmuka Sertifikat
  */
-export default function CertificateSection(): JSX.Element {
+export default function CertificateSection() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   return (
