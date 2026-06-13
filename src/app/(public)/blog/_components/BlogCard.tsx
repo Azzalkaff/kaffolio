@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Calendar, Clock, ArrowRight } from 'lucide-react';
-import { Article } from '@/lib/dummyDataDeveloper';
+import { Article } from '@/lib/mdx';
 
 export default function BlogCard({ article }: { article: Article }) {
   return (
