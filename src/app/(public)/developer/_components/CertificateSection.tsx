@@ -9,7 +9,12 @@ import certificatesData from '@/content/certificates.json';
 interface CertificateProps {
   id: string;
   title: string;
+  issuer?: string;
+  year?: string;
+  type?: string;
+  description?: string;
   imageUrl?: string;
+  url?: string;
   onImageClick?: () => void;
 }
 
@@ -23,26 +28,31 @@ interface CertificateProps {
  */
 function CertificateCard({
   title,
+  type,
   imageUrl,
   onImageClick,
 }: CertificateProps) {
+  const isAward = type === 'Award';
+
   return (
-    <div className="bg-card text-card-foreground border border-border rounded-xl hover:border-primary transition-colors shadow-sm flex flex-col h-full overflow-hidden group">
-      {/* Image Container */}
-      <div 
-        className="w-full h-48 bg-muted relative overflow-hidden border-b border-border cursor-pointer"
-        onClick={onImageClick}
-      >
+    <div 
+      className="relative group cursor-zoom-in w-full break-inside-avoid flex flex-col"
+      onClick={onImageClick}
+    >
+      {/* Image Container ONLY */}
+      <div className={`relative overflow-hidden bg-muted/20 border ${isAward ? 'border-yellow-500/50 shadow-lg shadow-yellow-500/10' : 'border-border/50'} aspect-[4/3] rounded-xl group-hover:border-primary transition-colors duration-500`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imageUrl || `https://via.placeholder.com/600x400?text=${encodeURIComponent(title)}`}
           alt={`${title} certificate`}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
         />
-      </div>
-
-      <div className="p-6 flex flex-col flex-grow justify-center text-center">
-        <h4 className="font-bold text-card-foreground text-lg leading-tight">{title}</h4>
+        {/* Subtle overlay indicator */}
+        <div className="absolute inset-0 bg-background/0 group-hover:bg-background/10 transition-colors duration-500 flex items-center justify-center">
+          <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-500 text-foreground font-bold tracking-widest uppercase text-sm bg-background/80 backdrop-blur-sm px-6 py-2 rounded-full">
+            View Details
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -50,57 +60,103 @@ function CertificateCard({
 
 /**
  * Komponen seksi Sertifikat untuk halaman utama developer portofolio.
- * Menampilkan daftar sertifikat profesional yang dimiliki.
- * Mematuhi coding standard: JSDoc, Server Component, Strict Typing, Guard Clauses/Pemisahan.
- *
- * @returns {JSX.Element} Bagian antarmuka Sertifikat
  */
 export default function CertificateSection() {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedCert, setSelectedCert] = useState<CertificateProps | null>(null);
 
   return (
-    <section id="certificates" className="space-y-12 py-16 scroll-mt-16">
+    <section id="certificates" className="space-y-12 py-16 scroll-mt-16 px-4 md:px-8 lg:px-12 max-w-7xl mx-auto">
       <div className="text-center space-y-4">
-        <h2 className="text-5xl md:text-6xl font-bold text-foreground">
-          <TypewriterText text="Certificates" />
+        <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-foreground uppercase tracking-tighter">
+          <TypewriterText text="Awards & Certifications." />
         </h2>
-        <p className="text-xl text-muted-foreground">Professional validations and licenses</p>
+        <p className="text-lg md:text-xl text-muted-foreground font-medium max-w-2xl mx-auto">
+          Penghargaan, pencapaian kompetisi, dan validasi keahlian profesional.
+        </p>
       </div>
 
-      <StaggerContainer staggerChildren={0.15} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+      <StaggerContainer staggerChildren={0.15} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
         {certificatesData.map((cert) => (
           <StaggerItem key={cert.id} className="h-full">
             <CertificateCard 
               {...cert} 
-              onImageClick={() => setSelectedImage(cert.imageUrl || `https://via.placeholder.com/600x400?text=${encodeURIComponent(cert.title)}`)} 
+              onImageClick={() => setSelectedCert(cert)} 
             />
           </StaggerItem>
         ))}
       </StaggerContainer>
 
-      {/* Modal / Lightbox untuk Gambar */}
-      {selectedImage && (
+      {/* Fullscreen Lightbox Modal (Split View) */}
+      {selectedCert && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity"
-          onClick={() => setSelectedImage(null)}
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-background/95 p-4 sm:p-8 backdrop-blur-md cursor-zoom-out animate-in fade-in duration-300"
+          onClick={() => setSelectedCert(null)}
         >
-          <div 
-            className="relative max-w-5xl w-full max-h-[90vh] flex justify-center items-center animate-in fade-in zoom-in duration-200"
-            onClick={(e) => e.stopPropagation()} // Mencegah modal tertutup jika gambar diklik
+          {/* Close Button */}
+          <button
+            className="absolute top-6 right-6 p-4 rounded-full bg-muted/20 text-foreground hover:bg-muted/50 transition-colors z-[110]"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedCert(null);
+            }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img 
-              src={selectedImage} 
-              alt="Certificate Full View" 
-              className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" 
-            />
-            <button 
-              className="absolute -top-4 -right-4 md:top-4 md:right-4 bg-card text-card-foreground rounded-full p-2 hover:bg-muted border border-border transition-colors shadow-lg"
-              onClick={() => setSelectedImage(null)}
-              aria-label="Close modal"
-            >
-              <X size={24} />
-            </button>
+            <X size={24} />
+          </button>
+
+          <div 
+            className="relative w-full max-w-6xl max-h-[90vh] flex flex-col md:flex-row cursor-default bg-card border border-border shadow-2xl overflow-hidden rounded-xl animate-in zoom-in-95 duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Left: Image */}
+            <div className="relative w-full md:w-1/2 h-[40vh] md:h-[85vh] bg-muted/30 flex-shrink-0 flex items-center justify-center p-8 border-b md:border-b-0 md:border-r border-border">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img 
+                src={selectedCert.imageUrl || `https://via.placeholder.com/600x400?text=${encodeURIComponent(selectedCert.title)}`} 
+                alt={selectedCert.title} 
+                className="max-w-full max-h-full object-contain rounded-lg shadow-xl drop-shadow-xl" 
+              />
+            </div>
+
+            {/* Right: Metadata Content */}
+            <div className="w-full md:w-1/2 py-8 md:py-16 px-8 md:px-12 overflow-y-auto max-h-[50vh] md:max-h-[85vh] flex-grow flex flex-col">
+              <div className="mb-8 border-b border-border/30 pb-8">
+                <span className={`text-xs font-bold tracking-[0.2em] uppercase mb-4 block ${selectedCert.type === 'Award' ? 'text-yellow-600 dark:text-yellow-500' : 'text-primary'}`}>
+                  {selectedCert.type === 'Award' ? '🏆 ' : ''}{selectedCert.type || 'Certificate'}
+                </span>
+                <h2 className="text-3xl md:text-5xl font-black text-foreground tracking-tighter leading-tight">
+                  {selectedCert.title}
+                </h2>
+              </div>
+
+              <div className="flex flex-col gap-6">
+                {/* Meta details list */}
+                <div className="flex flex-col gap-3">
+                  {selectedCert.issuer && (
+                    <div className="flex flex-col gap-1">
+                      <span className="text-xs font-bold tracking-widest text-muted-foreground uppercase">Issuer / Organizer</span>
+                      <span className="text-lg font-medium text-foreground">{selectedCert.issuer}</span>
+                    </div>
+                  )}
+                  
+                  {selectedCert.year && (
+                    <div className="flex flex-col gap-1 mt-2">
+                      <span className="text-xs font-bold tracking-widest text-muted-foreground uppercase">Year of Achievement</span>
+                      <span className="text-lg font-medium text-foreground">{selectedCert.year}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Description */}
+                {selectedCert.description && (
+                  <div className="mt-4">
+                    <span className="text-xs font-bold tracking-widest text-muted-foreground uppercase block mb-3">About This Validation</span>
+                    <p className="text-lg text-muted-foreground leading-relaxed font-light">
+                      {selectedCert.description}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}

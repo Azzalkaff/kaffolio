@@ -1,5 +1,5 @@
 ---
-id: '3'
+id: '5'
 slug: aplikasi-web-diverdea
 title: DiverDea
 shortDescription: 'Aplikasi untuk membuat prompt dan mampu merencakan aplikasi berbasis masalah di dunia nyata, ide, dan domain ilmu. Selain itu, bisa menggabungkan beberapa konsep unik sehingga menghasilkan konsep lateral yang unik.'
@@ -8,6 +8,7 @@ startDate: '2025-01-01'
 completedDate: '2025-06-01'
 isOngoing: true
 isFeatured: false
+category: 'Web'
 techStack:
   - HTML5
   - Javascript

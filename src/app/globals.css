@@ -16,22 +16,28 @@
   --color-muted-foreground: var(--muted-foreground);
 
   /* Brand Colors */
-  --color-primary: #82A760;
-  --color-primary-hover: #6F8F52;
-  --color-primary-foreground: #ffffff;
-  --color-secondary: var(--foreground); /* Fallback for legacy classes */
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--foreground);
+  /* Fallback for legacy classes */
 }
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #FCFCF8;
+  --background: #ffffff;
   --foreground: #1C2B21;
   --card: #FFFFFF;
-  --card-foreground: #2B4031;
+  --card-foreground: #0f1510;
   --border: #E8EFEA;
   --muted: #F3F7F4;
   --muted-foreground: #5C7C64;
+
+  /* Brand Colors (bisa di-override oleh color picker via JS) */
+  --primary: #82a760da;
+  --primary-hover: #6f8f52e6;
+  --primary-foreground: #ffffff;
 }
 
 .dark {
@@ -42,6 +48,11 @@
   --border: #253B2D;
   --muted: #1A2B21;
   --muted-foreground: #8FA696;
+
+  /* Brand Colors untuk Dark Mode */
+  --primary: #8AB266;
+  --primary-hover: #789B59;
+  --primary-foreground: #000000;
 }
 
 html {

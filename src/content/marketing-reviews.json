@@ -1,0 +1,26 @@
+[
+  {
+    "id": "rev-1",
+    "name": "Sarah Jenkins",
+    "status": "CMO at TechFlow SaaS",
+    "image": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150&h=150",
+    "rating": 5,
+    "review": "Working with Kaffa completely transformed our acquisition pipeline. We were burning cash on Google Ads with little return. He came in, fixed our technical SEO, and within 6 months our organic traffic surpassed our paid traffic. Absolute game changer."
+  },
+  {
+    "id": "rev-2",
+    "name": "David Chen",
+    "status": "Founder, Urban Threads",
+    "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150&h=150",
+    "rating": 5,
+    "review": "The rare combination of a developer and a marketer. He didn't just run our Meta Ads; he rebuilt our checkout flow to be frictionless. Our ROAS hit 12x during Q4, and our cart abandonment dropped by half. Worth every penny."
+  },
+  {
+    "id": "rev-3",
+    "name": "Elena Rodriguez",
+    "status": "Director of Growth, FinTech Pro",
+    "image": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150&h=150",
+    "rating": 5,
+    "review": "Data-driven, transparent, and incredibly creative. Instead of generic marketing fluff, he provided actionable insights backed by Hotjar data and A/B testing. We saw a 45% lift in our core conversion rate in just 30 days."
+  }
+]

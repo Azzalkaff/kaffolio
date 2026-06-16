@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
+import SplashScreen from '@/components/shared/SplashScreen';
+import Footer from '@/components/shared/Footer';
 
 export const metadata: Metadata = {
   title: 'Kaffolio - Portfolio',
@@ -16,8 +18,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className="font-primary pt-16 bg-background text-foreground transition-colors duration-300 relative overflow-x-hidden">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-
-          <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">{children}</main>
+          <SplashScreen />
+          <main className="w-full relative z-10 min-h-screen">{children}</main>
+          <Footer />
         </ThemeProvider>
       </body>
     </html>

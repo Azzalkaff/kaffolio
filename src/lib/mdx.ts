@@ -37,6 +37,7 @@ export interface Portfolio {
   completedDate?: string;
   isOngoing: boolean;
   isFeatured: boolean;
+  category?: string;
   role?: string;
   techStack: string[];
   cloudinaryUrl: string;
@@ -60,6 +61,43 @@ export interface Article {
   content?: string;
   date: string;
   readTime: string;
+}
+
+export interface CreativeProject {
+  id: string;
+  slug: string;
+  title: string;
+  category: string;
+  size: 'small' | 'medium' | 'large';
+  img: string;
+  shortDescription?: string;
+  content?: string;
+}
+
+export interface MarketingSnapshot {
+  industry: string;
+  scope: string;
+  timeline: string;
+  tools: string;
+  role: string;
+}
+
+export interface MarketingOutcome {
+  metric: string;
+  label: string;
+}
+
+export interface MarketingCampaign {
+  id: string;
+  slug: string;
+  title: string;
+  category: string;
+  size: 'small' | 'medium' | 'large';
+  img: string;
+  shortDescription?: string;
+  snapshot: MarketingSnapshot;
+  outcomes: MarketingOutcome[];
+  content?: string;
 }
 
 // --- CORE UTILS ---
@@ -125,4 +163,31 @@ export function getAllArticles(): Article[] {
 export function getArticleBySlug(slug: string): Article | undefined {
   const articles = getAllArticles();
   return articles.find((article) => article.slug === slug);
+}
+
+// --- CREATIVE PROJECTS API ---
+const CREATIVE_DIR = path.join(CONTENT_PATH, 'creative');
+
+export function getAllCreativeProjects(): CreativeProject[] {
+  const files = getMdxFiles(CREATIVE_DIR);
+  return files.map((file) => {
+    const filePath = path.join(CREATIVE_DIR, file);
+    return parseMdxFile<CreativeProject>(filePath);
+  });
+}
+
+// --- MARKETING CAMPAIGNS API ---
+const MARKETING_DIR = path.join(CONTENT_PATH, 'marketing');
+
+export function getAllMarketingCampaigns(): MarketingCampaign[] {
+  const files = getMdxFiles(MARKETING_DIR);
+  return files.map((file) => {
+    const filePath = path.join(MARKETING_DIR, file);
+    return parseMdxFile<MarketingCampaign>(filePath);
+  });
+}
+
+export function getMarketingCampaignBySlug(slug: string): MarketingCampaign | undefined {
+  const campaigns = getAllMarketingCampaigns();
+  return campaigns.find((campaign) => campaign.slug === slug);
 }

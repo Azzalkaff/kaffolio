@@ -47,22 +47,22 @@ Aplikasi **Kaffolio** telah berevolusi menjadi sebuah **Multi-Persona Hybrid Por
 ### 4.1 Core Features (Multi-Persona Routes)
 
 #### 1. The Main Hub (`/`)
-- **Deskripsi:** Halaman Lobi/Gerbang utama. Menampilkan sapaan dan kartu navigasi besar ke 4 pilar bisnis: Developer, Designer, Shop, dan Blog.
+- **Deskripsi:** Halaman Lobi/Gerbang utama. Menampilkan Wheel Menu interaktif sebagai navigasi sentral ke 4 pilar bisnis (Developer, Creative, Shop, Blog).
+- **Fitur Khusus:** Navigasi antarmuka dilengkapi dengan animasi transisi "Expanding Portal" (Ripple Effect membesar menutupi layar) yang ringan dan berjalan tanpa memerlukan Wrapper Global (KISS Principle).
 
 #### 2. Developer Portfolio (`/developer`)
 - **Deskripsi:** Portofolio teknis murni untuk HRD/Tech Recruiter. Berisi Tech Stack, GitHub projects, dan studi kasus arsitektur.
 - **Komponen:** Hero, About, Services, Experience, Projects, Certificate, dan Connect.
 - **Data Persistence:** Disimpan secara permanen di MongoDB.
 
-#### 3. Creative & General Design Portfolio (`/creative`)
-- **Deskripsi:** Portofolio visual komprehensif (*General Design*) untuk klien dan audiens kreatif. Tidak terbatas pada UI/UX, melainkan mencakup spektrum desain yang lebih luas.
-- **Fokus Area:** Brand Identity (Logo, Typography), Graphic/Digital Art (Poster, Social Media, Marketing), Motion Graphics & Animasi, serta UI/UX.
-- **Komponen Rekomendasi:** 
-  - **Visual Hero / Showreel:** Layout berbasis visual (seperti *masonry grid* atau video *showreel*) tanpa terlalu banyak teks.
-  - **Design Philosophy:** Penjelasan singkat tentang pendekatan kreatif dan seni (Art Direction).
-  - **Bento/Masonry Gallery:** Galeri portofolio visual yang memanjakan mata, lengkap dengan filter kategori (Branding, Motion, Illustration, UI/UX).
-  - **Services / Capabilities:** Menjabarkan layanan desain apa saja yang bisa dikerjakan.
-  - **Creative CTA:** Formulir atau kontak untuk memulai kolaborasi proyek desain.
+#### 3. Creative & General Design Portfolio (`/creative` & `/creative/gallery`)
+- **Deskripsi:** Portofolio visual komprehensif (*General Design*) untuk klien kreatif. Menggunakan *Native CSS Masonry Layout* dengan algoritma *Auto-Height* (`width: 100%, height: auto`) sehingga grid mengalir otomatis dan presisi mengikuti aspek rasio gambar asli tanpa sedikit pun terpotong.
+- **Fokus Area:** Poster, Food Design, Branding, Digital Art, dll.
+- **Komponen & Arsitektur Utama:** 
+  - **Visual Hero:** Latar belakang hero section dinamis yang sekarang dilayani penuh melalui file lokal (*Next.js Local Assets*) untuk performa optimal.
+  - **Dynamic Masonry Gallery (`/creative`):** Galeri awal yang dilengkapi fitur *Lightbox Modal* (layar penuh) dan filter kategori yang diekstraksi secara dinamis via *Javascript Set()* dari sumber data tunggal (DRY Principle).
+  - **Pinterest Vibe Extended Gallery (`/creative/gallery`):** Halaman ekspansi mandiri khusus untuk menampilkan katalog visual tak terbatas dengan *vibe* ala Pinterest.
+  - **Centralized Data Storage:** Seluruh data desain disimpan terpusat dalam `src/lib/creativeData.ts` sebagai *Single Source of Truth* (*Solid Principle*).
 
 #### 4. Digital Products Shop (`/shop`)
 - **Deskripsi:** Etalase produk digital (Katalog NoSQL).

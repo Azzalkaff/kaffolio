@@ -51,7 +51,7 @@ export default function SocialLinks({ social }: SocialLinksProps) {
   if (!social) return null;
 
   // Ukuran icon dapat disesuaikan di sini
-  const iconSizeClass = 'w-[75px] h-[75px]';
+  const iconSizeClass = 'w-5 h-5';
 
   return (
     <div className="flex flex-wrap justify-center gap-4">
@@ -65,11 +65,11 @@ export default function SocialLinks({ social }: SocialLinksProps) {
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className={`flex items-center gap-2 px-4 py-2 rounded-full border border-border text-muted-foreground hover:text-white transition-all shadow-sm font-semibold ${platform.hoverBg}`}
+            title={platform.label}
+            className={`flex items-center justify-center w-14 h-14 rounded-full border border-border bg-card text-muted-foreground hover:text-white hover:border-transparent transition-all shadow-sm hover:shadow-md ${platform.hoverBg}`}
             aria-label={platform.label}
           >
             <SimpleIcon icon={platform.icon} className={iconSizeClass} />
-            {platform.label}
           </a>
         );
       })}

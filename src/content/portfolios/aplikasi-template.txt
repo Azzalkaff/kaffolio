@@ -1,0 +1,47 @@
+---
+id: '4'
+slug: aplikasi
+title: Aplikasi 
+shortDescription: 'Portal web untuk check jadwal, cari kelas kosong, dll.'
+role: Frontend Engineer
+startDate: '2025-01-01'
+completedDate: '2025-06-01'
+isOngoing: true
+isFeatured: false
+techStack:
+  - 
+  - 
+  - 
+cloudinaryUrl: /
+galleryUrls: []
+liveDemoUrl: 'https://separate-jadwal-matkul.vercel.app/'
+githubUrl: ''
+figmaUrl: ''
+---
+## Latar Belakang
+>
+
+---
+
+## Jelajah Fitur
+
+### 1. 
+>
+![Fitur](/images/portfolios/aplikasi-jadwal-matkul/body-img-1.png)
+
+### 2. 
+>.
+![fitur](/images/portfolios/aplikasi-jadwal-matkul/body-img-2.png)
+
+### 3. 
+>.
+![fitur](/images/portfolios/aplikasi-jadwal-matkul/body-img-3.png)
+
+### 4. 
+>.
+![fitur](/images/portfolios/aplikasi-jadwal-matkul/body-img-4.png)
+
+---
+
+## Kesimpulan & Dampak
+>

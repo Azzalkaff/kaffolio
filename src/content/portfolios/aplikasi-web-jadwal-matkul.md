@@ -1,13 +1,14 @@
 ---
-id: '3'
+id: '8'
 slug: aplikasi-jadwal-matkul
-title: Aplikasi Web Jadwal Mata kuliah
+title: Jadwal Mata kuliah JTK
 shortDescription: 'Portal web untuk check jadwal, cari kelas kosong, dll.'
 role: Frontend Engineer
 startDate: '2025-01-01'
 completedDate: '2025-06-01'
 isOngoing: true
 isFeatured: false
+category: 'Web'
 techStack:
   - CSS
   - HTML

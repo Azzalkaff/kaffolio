@@ -4,8 +4,8 @@ export default function DeveloperLayout({ children }: { children: React.ReactNod
   const developerLinks = [
     { label: 'Home', href: '/developer#hero' },
     { label: 'About', href: '/developer#about' },
-    { label: 'Gallery', href: '/developer#gallery' },
-    { label: 'Certificates', href: '/developer#certificates' },
+    { label: 'Projects', href: '/developer#projects' },
+    { label: 'Certificate', href: '/developer#certificate' },
     { label: 'Connect', href: '/developer#connect' },
   ];
 

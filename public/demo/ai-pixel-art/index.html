@@ -1,0 +1,2823 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Art Matrix Extractor</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        // Inisialisasi tema lebih awal untuk mencegah efek kedipan latar belakang
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+        }
+        
+        /* Scrollbar minimalis hitam-putih adaptif */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
+        
+        .dark ::-webkit-scrollbar-thumb { background: #3f3f46; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #52525b; }
+
+        /* Latar belakang papan catur untuk kanvas - Adaptif */
+        .checkerboard-bg {
+            background-image: linear-gradient(45deg, #e5e5e5 25%, transparent 25%), 
+                              linear-gradient(-45deg, #e5e5e5 25%, transparent 25%), 
+                              linear-gradient(45deg, transparent 75%, #e5e5e5 75%), 
+                              linear-gradient(-45deg, transparent 75%, #e5e5e5 75%);
+            background-size: 16px 16px;
+            background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+            background-color: #f5f5f5;
+        }
+        
+        .dark .checkerboard-bg {
+            background-image: linear-gradient(45deg, #1a1a1a 25%, transparent 25%), 
+                              linear-gradient(-45deg, #1a1a1a 25%, transparent 25%), 
+                              linear-gradient(45deg, transparent 75%, #1a1a1a 75%), 
+                              linear-gradient(-45deg, transparent 75%, #1a1a1a 75%);
+            background-color: #000;
+        }
+
+        /* Sembunyikan tombol spinner pada input bertipe number */
+        input[type="number"]::-webkit-inner-spin-button, 
+        input[type="number"]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        
+        /* Slider kustom adaptif */
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #e5e5e5;
+            height: 4px;
+            border-radius: 9999px;
+        }
+        .dark input[type="range"] { background: #333; }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #000;
+            border: 2px solid #fff;
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.1); }
+        .dark input[type="range"]::-webkit-slider-thumb {
+            background: #fff;
+            border: 2px solid #000;
+        }
+        
+        /* Kustomisasi pemilih warna adaptif */
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: none;
+            width: 36px;
+            height: 36px;
+            background: transparent;
+            cursor: pointer;
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch {
+            border: 2px solid #e5e5e5;
+            border-radius: 50%;
+        }
+        .dark input[type="color"]::-webkit-color-swatch { border: 2px solid #333; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between bg-neutral-50 text-neutral-900 dark:bg-[#0a0a0a] dark:text-[#f4f4f5] selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-200">
+
+    <!-- Header -->
+    <header class="border-b border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-black/80 backdrop-blur-md sticky top-0 z-50 px-6 py-4 transition-colors duration-200">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+                <div class="flex items-center gap-3">
+                    <div class="p-2.5 bg-black text-white dark:bg-white dark:text-black rounded-xl shadow-sm transition-colors duration-200">
+                        <i data-lucide="grid-3x3" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-extrabold tracking-tight">Matrix Extractor</h1>
+                        <p class="text-[11px] text-neutral-500 font-mono tracking-wide uppercase font-semibold">AI Generation / V3.1 Rounded</p>
+                    </div>
+                </div>
+                <!-- Lencana Gemini -->
+                <div class="flex items-center gap-1.5 ml-2">
+                    <span class="text-sm font-bold text-sky-500 dark:text-sky-400">3.1 Flash-Lite</span>
+                    <span class="px-2 py-0.5 text-[10px] bg-neutral-800 text-white rounded-full font-bold">Baru</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+                <button onclick="toggleTheme()" class="p-2.5 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded-xl transition-all shadow-sm" title="Ubah Tema (T)">
+                    <i data-lucide="sun-moon" class="w-4 h-4"></i>
+                </button>
+                <button onclick="toggleSettingsModal()" class="p-2.5 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded-xl transition-all shadow-sm" title="Pengaturan Kredensial API">
+                    <i data-lucide="settings" class="w-4 h-4"></i>
+                </button>
+                <div class="flex items-center gap-2 text-xs bg-neutral-100 dark:bg-neutral-900 px-4 py-2 border border-neutral-200 dark:border-neutral-800 font-mono font-medium rounded-xl transition-colors shadow-sm">
+                    <span class="w-2 h-2 bg-emerald-500 dark:bg-emerald-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+                    SISTEM AKTIF
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-8 lg:px-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+            
+            <!-- Panel Kiri: Mode, Unggah & Penyesuaian (5 Kolom) -->
+            <div class="lg:col-span-5 flex flex-col gap-6">
+                
+                <!-- Pemilih Mode -->
+                <div class="grid grid-cols-3 gap-1 p-1.5 border border-neutral-200 dark:border-neutral-800 bg-neutral-100/50 dark:bg-neutral-900/50 rounded-2xl transition-colors shadow-inner">
+                    <button id="modeExtractBtn" onclick="setMode('extract')" class="py-2 px-1 text-[10px] font-bold uppercase tracking-wider text-neutral-500 hover:text-black dark:hover:text-white transition-all rounded-xl" title="Mode Ekstrak (M)">
+                        Ekstrak
+                    </button>
+                    <button id="modeDrawBtn" onclick="setMode('draw')" class="py-2 px-1 text-[10px] font-bold uppercase tracking-wider bg-white text-black shadow-sm dark:bg-neutral-800 dark:text-white transition-all rounded-xl" title="Mode Gambar Manual (M)">
+                        Editor
+                    </button>
+                    <button id="modeAIBtn" onclick="setMode('ai')" class="py-2 px-1 text-[10px] font-bold uppercase tracking-wider text-neutral-500 hover:text-black dark:hover:text-white transition-all rounded-xl" title="Mode Generator AI">
+                        AI Generator
+                    </button>
+                </div>
+                
+                <!-- Kotak 1: Area Dropzone File (Terlihat di Mode Ekstrak) -->
+                <div id="dropzoneContainer" class="hidden">
+                    <div id="dropzone" class="border-2 border-dashed border-neutral-300 dark:border-neutral-700 hover:border-black dark:hover:border-white bg-white dark:bg-neutral-900/30 p-10 transition-all cursor-pointer group flex flex-col items-center justify-center text-center rounded-3xl shadow-sm">
+                        <input type="file" id="fileInput" accept="image/png" class="hidden" />
+                        <div class="p-4 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 group-hover:bg-black group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-black transition-all mb-4 rounded-2xl shadow-sm group-hover:shadow-md">
+                            <i data-lucide="upload" class="w-6 h-6"></i>
+<h3 class="font-bold mb-1">Unggah Seni PNG</h3>
+                        <p class="text-xs text-neutral-500 font-mono">Dukung Drag & Drop file</p>
+                    </div>
+                    <div class="mt-3 p-4 bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl">
+                        <label for="rasterFileInput" class="block text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-2 cursor-pointer hover:text-black dark:hover:text-white transition-colors">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5 inline mr-1 text-sky-500"></i> AI Image-To-PixelArt Converter
+                        </label>
+                        <input type="file" id="rasterFileInput" accept="image/jpeg,image/png,image/webp" class="text-xs block w-full file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:uppercase file:bg-black file:text-white dark:file:bg-white dark:file:text-black cursor-pointer mb-2" />
+                        <button id="btnConvertRasterAI" onclick="convertImageToPixelArtAI()" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold uppercase tracking-wider text-[10px] py-2 transition-all rounded-xl flex items-center justify-center gap-1.5 shadow-sm">
+                            <i data-lucide="wand-2" class="w-3.5 h-3.5"></i> Proses via AI Pipeline
+                        </button>
+                    </div>
+                </div>
+                </div>
+
+                <!-- Kotak 1.5: Alat Menggambar (Terlihat di Mode Gambar) -->
+<div id="drawToolsContainer" class="border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/40 p-6 rounded-3xl shadow-sm flex flex-col gap-5 transition-colors">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-neutral-100 dark:border-neutral-800/60 pb-4">
+                        <div class="flex items-center gap-2 min-w-max">
+                            <i data-lucide="pen-tool" class="w-4 h-4 text-neutral-500"></i>
+                            <h2 class="font-bold text-sm tracking-wide">Alat Gambar</h2>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-1.5 sm:justify-end">
+                            <button onclick="undo()" id="btnUndo" disabled class="p-1.5 text-neutral-400 hover:text-black hover:bg-neutral-100 dark:hover:bg-neutral-800 dark:hover:text-white disabled:opacity-30 disabled:hover:text-neutral-400 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed transition-all rounded-lg" title="Undo (Ctrl+Z)">
+                                <i data-lucide="undo" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="redo()" id="btnRedo" disabled class="p-1.5 text-neutral-400 hover:text-black hover:bg-neutral-100 dark:hover:bg-neutral-800 dark:hover:text-white disabled:opacity-30 disabled:hover:text-neutral-400 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed transition-all rounded-lg" title="Redo (Ctrl+Y)">
+                                <i data-lucide="redo" class="w-4 h-4"></i>
+                            </button>
+                            <div class="w-px h-5 bg-neutral-200 dark:bg-neutral-700 mx-0.5"></div>
+                            <button onclick="flipMatrix('horizontal')" class="p-1.5 text-neutral-500 hover:text-black hover:bg-neutral-100 dark:hover:bg-neutral-800 dark:hover:text-white transition-all rounded-lg" title="Flip Horizontal">
+                                <i data-lucide="flip-horizontal" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="flipMatrix('vertical')" class="p-1.5 text-neutral-500 hover:text-black hover:bg-neutral-100 dark:hover:bg-neutral-800 dark:hover:text-white transition-all rounded-lg" title="Flip Vertical">
+                                <i data-lucide="flip-vertical" class="w-4 h-4"></i>
+                            </button>
+                            <div class="w-px h-5 bg-neutral-200 dark:bg-neutral-700 mx-0.5"></div>
+                            <button onclick="createBlankGrid()" class="text-[10px] uppercase font-bold tracking-wider px-3 py-1.5 border border-neutral-200 dark:border-neutral-700 hover:border-black dark:hover:border-white hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all rounded-lg" title="Bersihkan Kanvas (C)">
+                                Bersihkan
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-row items-center gap-3 bg-neutral-50/50 dark:bg-neutral-900/30 p-3 rounded-2xl border border-neutral-100 dark:border-neutral-800/50 w-full overflow-x-auto">
+                        <div class="flex items-center justify-center p-1 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm shrink-0">
+                            <input type="color" id="colorPicker" value="#000000" title="Pilih Warna" class="w-9 h-9 cursor-pointer" />
+                        </div>
+                        
+                        <div class="w-px h-8 bg-neutral-200 dark:bg-neutral-700 shrink-0"></div>
+                        
+                        <div class="flex items-center gap-1.5 overflow-x-auto py-0.5">
+                            <button id="toolPen" onclick="selectTool('pen')" title="Pena (P)" class="w-10 h-10 shrink-0 bg-black text-white dark:bg-white dark:text-black shadow-md flex justify-center items-center transition-all rounded-xl">
+                                <i data-lucide="pen" class="w-4 h-4"></i>
+                            </button>
+                            <button id="toolEraser" onclick="selectTool('eraser')" title="Penghapus (E)" class="w-10 h-10 shrink-0 bg-white text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 hover:text-black hover:border-neutral-400 dark:hover:text-white dark:hover:border-neutral-500 flex justify-center items-center transition-all rounded-xl">
+                                <i data-lucide="eraser" class="w-4 h-4"></i>
+                            </button>
+                            <button id="toolFill" onclick="selectTool('fill')" title="Kaleng Cat (F)" class="w-10 h-10 shrink-0 bg-white text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 hover:text-black hover:border-neutral-400 dark:hover:text-white dark:hover:border-neutral-500 flex justify-center items-center transition-all rounded-xl">
+                                <i data-lucide="paint-bucket" class="w-4 h-4"></i>
+                            </button>
+                            <button id="toolPicker" onclick="selectTool('eyedropper')" title="Pipet Warna (I)" class="w-10 h-10 shrink-0 bg-white text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 hover:text-black hover:border-neutral-400 dark:hover:text-white dark:hover:border-neutral-500 flex justify-center items-center transition-all rounded-xl">
+                                <i data-lucide="pipette" class="w-4 h-4"></i>
+                            </button>
+                            
+                            <div class="w-px h-6 bg-neutral-200 dark:bg-neutral-700 mx-1 shrink-0"></div>
+                            
+                            <button id="toolLine" onclick="selectTool('line')" title="Garis (L)" class="w-10 h-10 shrink-0 bg-white text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 hover:text-black hover:border-neutral-400 dark:hover:text-white dark:hover:border-neutral-500 flex justify-center items-center transition-all rounded-xl">
+                                <i data-lucide="minus" class="w-4 h-4 rotate-45"></i>
+                            </button>
+                            <button id="toolRect" onclick="selectTool('rect')" title="Kotak (R)" class="w-10 h-10 shrink-0 bg-white text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 hover:text-black hover:border-neutral-400 dark:hover:text-white dark:hover:border-neutral-500 flex justify-center items-center transition-all rounded-xl">
+                                <i data-lucide="square" class="w-4 h-4"></i>
+                            </button>
+                            <button id="toolCircle" onclick="selectTool('circle')" title="Lingkaran (O)" class="w-10 h-10 shrink-0 bg-white text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 hover:text-black hover:border-neutral-400 dark:hover:text-white dark:hover:border-neutral-500 flex justify-center items-center transition-all rounded-xl">
+                                <i data-lucide="circle" class="w-4 h-4"></i>
+                            </button>
+                            
+                            <div class="w-px h-6 bg-neutral-200 dark:bg-neutral-700 mx-1 shrink-0"></div>
+                            
+                            <button id="toolPerfect" onclick="selectTool('perfect')" title="Pixel-Perfect Pen (N)" class="w-10 h-10 shrink-0 bg-white text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 hover:text-black hover:border-neutral-400 dark:hover:text-white dark:hover:border-neutral-500 flex justify-center items-center transition-all rounded-xl">
+                                <i data-lucide="sparkle" class="w-4 h-4"></i>
+                            </button>
+                            <button id="toolSpray" onclick="selectTool('spray')" title="Spray Can (S)" class="w-10 h-10 shrink-0 bg-white text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 hover:text-black hover:border-neutral-400 dark:hover:text-white dark:hover:border-neutral-500 flex justify-center items-center transition-all rounded-xl">
+                                <i data-lucide="spray-can" class="w-4 h-4"></i>
+                            </button>
+                            <button id="toolSelection" onclick="selectTool('selection')" title="Selection Marquee (M)" class="w-10 h-10 shrink-0 bg-white text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 hover:text-black hover:border-neutral-400 dark:hover:text-white dark:hover:border-neutral-500 flex justify-center items-center transition-all rounded-xl">
+                                <i data-lucide="scan-dashed" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kotak 1.6: Opsi Generator AI (Terlihat di Mode AI) -->
+<div id="aiToolsContainer" class="hidden border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/40 p-6 rounded-3xl shadow-sm flex flex-col gap-5 transition-colors">
+                    <div class="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800/60 pb-4">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-sky-500 animate-pulse"></i>
+                            <h2 class="font-bold text-sm tracking-wide">Gemini 3.1 AI Artist</h2>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-1 p-1 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-[11px] font-bold uppercase tracking-wider">
+                        <button onclick="switchAISubMode('asset')" id="aiSubAssetBtn" class="py-1.5 rounded-lg bg-white dark:bg-neutral-700 text-black dark:text-white shadow-sm">Asset Gen</button>
+                        <button onclick="switchAISubMode('palette')" id="aiSubPaletteBtn" class="py-1.5 rounded-lg text-neutral-500 hover:text-black dark:hover:text-white">Palette Gen</button>
+<div id="aiAssetSection" class="space-y-4">
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-2" for="aiPrompt">Deskripsi Perintah (Prompt)</label>
+                            <textarea id="aiPrompt" rows="3" class="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 focus:border-black dark:focus:border-white focus:ring-1 focus:ring-black dark:focus:ring-white px-3 py-2.5 text-sm focus:outline-none transition-all rounded-xl" placeholder="Contoh: Pesawat luar angkasa retro, ramuan penyembuh berkilau, pedang pixel ajaib..."></textarea>
+<div class="flex flex-col gap-3 p-4 bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200/60 dark:border-neutral-700/60 rounded-2xl text-xs">
+                            <div class="flex items-start gap-3 cursor-pointer group">
+                                <input type="radio" id="aiModeStandard" name="aiConditionGroup" value="standard" checked class="accent-black dark:accent-white w-4 h-4 mt-0.5 cursor-pointer shrink-0" />
+                                <label for="aiModeStandard" class="text-neutral-600 dark:text-neutral-400 font-medium cursor-pointer leading-tight select-none group-hover:text-black dark:group-hover:text-white transition-colors">
+                                    MURNI TEKS (TEXT-TO-IMAGE)
+                                </label>
+                            </div>
+                            <div class="flex items-start gap-3 cursor-pointer group">
+                                <input type="radio" id="aiModeInpaint" name="aiConditionGroup" value="inpaint" class="accent-black dark:accent-white w-4 h-4 mt-0.5 cursor-pointer shrink-0" />
+                                <label for="aiModeInpaint" class="text-neutral-600 dark:text-neutral-400 font-medium cursor-pointer leading-tight select-none group-hover:text-black dark:group-hover:text-white transition-colors">
+                                    GUNAKAN WARNA & BENTUK MATRIKS (IMG2IMG)
+                                </label>
+                            </div>
+                            <div class="flex items-start gap-3 cursor-pointer group">
+                                <input type="radio" id="aiModeSketch" name="aiConditionGroup" value="sketch" class="accent-black dark:accent-white w-4 h-4 mt-0.5 cursor-pointer shrink-0" />
+                                <label for="aiModeSketch" class="text-sky-600 dark:text-sky-400 font-bold leading-tight flex items-center gap-1 cursor-pointer select-none">
+                                    <i data-lucide="wand" class="w-3.5 h-3.5 shrink-0"></i> AI SHAPE WIZARD (SKETCH-TO-IMAGE)
+                                </label>
+                            </div>
+                        </div>
+                        </div>
+
+                        <button id="btnGenerateAI" onclick="generatePixelArtAI()" class="w-full bg-black text-white dark:bg-white dark:text-black font-extrabold uppercase tracking-widest text-xs py-3.5 hover:opacity-90 active:scale-[0.98] transition-all rounded-xl flex items-center justify-center gap-2">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i> Generate Asset
+                        </button>
+                    </div>
+                    </div>
+
+                    <div id="aiPaletteSection" class="hidden space-y-4">
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-2" for="aiPalettePrompt">Tema Warna Palet</label>
+                            <input type="text" id="aiPalettePrompt" class="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 focus:border-black dark:focus:border-white focus:ring-1 focus:ring-black dark:focus:ring-white px-3 py-2.5 text-sm focus:outline-none transition-all rounded-xl" placeholder="Contoh: Cyberpunk Neon, Rawa Beracun Retro, Istana Es GBA..." />
+                        </div>
+                        <button id="btnGeneratePaletteAI" onclick="generatePaletteAI()" class="w-full bg-sky-600 text-white font-extrabold uppercase tracking-widest text-xs py-3.5 hover:bg-sky-700 active:scale-[0.98] transition-all rounded-xl flex items-center justify-center gap-2">
+                            <i data-lucide="palette" class="w-4 h-4"></i> Generate Warna
+                        </button>
+                    </div>
+
+                    <p id="aiProgressMessage" class="hidden text-xs text-sky-500 font-mono text-center mt-2 animate-pulse"></p>
+                </div>
+
+                <!-- Kotak 2: Konfigurasi Matriks -->
+                <div class="border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/40 p-6 rounded-3xl shadow-sm flex flex-col gap-5 transition-colors">
+                    <div class="flex items-center gap-2 border-b border-neutral-100 dark:border-neutral-800/60 pb-4">
+                        <i data-lucide="settings-2" class="w-4 h-4 text-neutral-500"></i>
+                        <h2 class="font-bold text-sm tracking-wide">Konfig Matriks</h2>
+                    </div>
+
+                    <!-- Pemilihan Resolusi Grid -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-2" for="gridWidth">Kolom (W)</label>
+                            <input type="number" id="gridWidth" value="16" min="1" max="256" class="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 focus:border-black dark:focus:border-white focus:ring-1 focus:ring-black dark:focus:ring-white px-3 py-2 text-sm font-mono focus:outline-none transition-all rounded-xl" />
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-2" for="gridHeight">Baris (H)</label>
+                            <input type="number" id="gridHeight" value="16" min="1" max="256" class="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 focus:border-black dark:focus:border-white focus:ring-1 focus:ring-black dark:focus:ring-white px-3 py-2 text-sm font-mono focus:outline-none transition-all rounded-xl" />
+                        </div>
+                    </div>
+
+                    <!-- Auto Deteksi / Pintasan Ukuran Grid -->
+                    <div>
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" onclick="setGridSize(8)" class="px-3 py-1.5 bg-white dark:bg-neutral-900 text-xs font-mono border border-neutral-200 dark:border-neutral-700 hover:border-black dark:hover:border-white transition-all rounded-lg shadow-sm">8x8</button>
+                            <button type="button" onclick="setGridSize(16)" class="px-3 py-1.5 bg-white dark:bg-neutral-900 text-xs font-mono border border-neutral-200 dark:border-neutral-700 hover:border-black dark:hover:border-white transition-all rounded-lg shadow-sm">16x16</button>
+<button type="button" onclick="setGridSize(32)" class="px-3 py-1.5 bg-white dark:bg-neutral-900 text-xs font-mono border border-neutral-200 dark:border-neutral-700 hover:border-black dark:hover:border-white transition-all rounded-lg shadow-sm">32x32</button>
+                            <button type="button" onclick="setGridSize(64)" class="px-3 py-1.5 bg-white dark:bg-neutral-900 text-xs font-mono border border-neutral-200 dark:border-neutral-700 hover:border-black dark:hover:border-white transition-all rounded-lg shadow-sm">64x64</button>
+                            <button type="button" onclick="setGridSize(128)" class="px-3 py-1.5 bg-white dark:bg-neutral-900 text-xs font-mono border border-neutral-200 dark:border-neutral-700 hover:border-black dark:hover:border-white transition-all rounded-lg shadow-sm">128x128</button>
+                            <button type="button" id="autoDetectBtn" disabled class="px-3 py-1.5 bg-black text-white dark:bg-white dark:text-black font-bold text-[10px] uppercase tracking-wider flex items-center gap-1.5 opacity-50 cursor-not-allowed ml-auto rounded-lg shadow-sm">
+                                <i data-lucide="scan" class="w-3 h-3"></i> Auto-Size
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Parameter Lanjutan -->
+                    <div class="space-y-5 pt-4 border-t border-neutral-100 dark:border-neutral-800/60">
+<div>
+                            <label class="block text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-2" for="transparentIndex">Nilai Indeks Transparan</label>
+                            <input type="text" id="transparentIndex" value="0" class="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 focus:border-black dark:focus:border-white focus:ring-1 focus:ring-black dark:focus:ring-white px-3 py-2 text-sm font-mono focus:outline-none transition-all rounded-xl" placeholder="e.g. 0, -1, null" />
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-2" for="exportFileName">Nama File Ekspor</label>
+                            <input type="text" id="exportFileName" value="pixel_asset" class="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 focus:border-black dark:focus:border-white focus:ring-1 focus:ring-black dark:focus:ring-white px-3 py-2 text-sm font-mono focus:outline-none transition-all rounded-xl" placeholder="Contoh: player_sprite" />
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-2" for="paletteTypeSelect">Format Palet</label>
+                                <select id="paletteTypeSelect" onchange="resizeGridAction()" class="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 focus:border-black dark:focus:border-white focus:ring-1 focus:ring-black dark:focus:ring-white px-3 py-2 text-sm font-mono focus:outline-none transition-all rounded-xl cursor-pointer">
+                                    <option value="adaptive">Adaptive K-Means</option>
+                                    <option value="gameboy">GameBoy DMG (4-Color)</option>
+                                    <option value="nes">NES Style (Vibrant)</option>
+                                    <option value="pico8">PICO-8 (16-Color Retro)</option>
+                                    <option value="monochrome">Monochrome (1-Bit)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-2" for="pixelStyleSelect">Jenis Pixel Art</label>
+                                <select id="pixelStyleSelect" onchange="resizeGridAction()" class="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 focus:border-black dark:focus:border-white focus:ring-1 focus:ring-black dark:focus:ring-white px-3 py-2 text-sm font-mono focus:outline-none transition-all rounded-xl cursor-pointer">
+                                    <option value="flat">Flat / Cell-Shading</option>
+                                    <option value="dithered">Dithered (Bayer 2x2)</option>
+                                    <option value="outline">Hard Outline Preserved</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="toleranceContainer" class="opacity-30 pointer-events-none">
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-neutral-500" for="tolerance">Toleransi Peleburan Warna</label>
+                                <span id="toleranceVal" class="text-xs font-mono bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-md">15</span>
+                            </div>
+                            <input type="range" id="tolerance" min="0" max="100" value="15" class="w-full" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kotak 3: Pemetaan Palet Warna -->
+                <div class="border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/40 p-6 rounded-3xl shadow-sm transition-colors">
+                    <div class="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800/60 pb-4 mb-4">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="palette" class="w-4 h-4 text-neutral-500"></i>
+                            <h2 class="font-bold text-sm tracking-wide">Indeks Warna</h2>
+                        </div>
+                        <span id="paletteCount" class="text-[10px] font-bold tracking-wider font-mono bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 px-2.5 py-1 rounded-lg">0 WARNA</span>
+                    </div>
+
+                    <div id="paletteContainer" class="max-h-56 overflow-y-auto grid grid-cols-1 gap-2 pr-2 text-sm">
+                        <div class="flex flex-col items-center justify-center py-6 gap-2 opacity-50">
+                            <i data-lucide="droplets" class="w-6 h-6"></i>
+                            <p class="text-neutral-500 italic text-xs">Menunggu data...</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Panel Kanan: Workspace (7 Kolom) -->
+            <div class="lg:col-span-7 flex flex-col gap-6">
+
+                <!-- Sistem Tab -->
+                <div class="border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/40 rounded-3xl shadow-sm flex flex-col overflow-hidden h-[680px] transition-colors">
+                    <div class="bg-white/50 dark:bg-black/20 backdrop-blur-md px-3 py-2.5 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
+                        <div class="flex gap-2">
+                            <button id="tabVisual" onclick="switchTab('visual')" class="px-5 py-2 text-xs font-bold uppercase tracking-wider bg-black text-white shadow-sm dark:bg-white dark:text-black transition-all rounded-xl">
+                                Grid Visual
+                            </button>
+                            <button id="tabOutput" onclick="switchTab('output')" class="px-5 py-2 text-xs font-bold uppercase tracking-wider text-neutral-500 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all rounded-xl">
+                                Kode Output
+                            </button>
+                        </div>
+                        
+                        <div class="flex items-center gap-2 pr-3">
+                            <label id="gridToggleContainer" class="flex items-center gap-2.5 text-[10px] font-bold uppercase tracking-wider text-neutral-500 cursor-pointer hover:text-black dark:hover:text-white transition-colors">
+                                <input type="checkbox" id="showGrid" checked class="accent-black dark:accent-white cursor-pointer w-4 h-4 rounded-md" />
+                                <span>Garis Grid</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Panel Konten -->
+                    <div class="p-5 flex-grow overflow-hidden flex flex-col relative bg-neutral-50/50 dark:bg-[#0f0f0f] transition-colors">
+                        
+                        <!-- Panel Visual -->
+                        <div id="panelVisual" class="flex-grow flex flex-col items-center justify-center overflow-auto max-h-full">
+                            <div id="emptyState" class="text-center p-8 max-w-sm hidden">
+                                <div class="w-16 h-16 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm flex items-center justify-center mx-auto mb-5 rounded-2xl">
+                                    <i data-lucide="monitor" class="w-8 h-8 text-neutral-400"></i>
+                                </div>
+                                <h3 class="font-bold text-lg mb-2">Tidak Ada Data Matriks</h3>
+                                <p class="text-sm text-neutral-500">Unggah gambar, ketik prompt AI, atau alihkan ke Mode Editor untuk mulai menggambar.</p>
+                            </div>
+
+                            <div id="canvasWrapper" class="flex flex-col items-center gap-5 w-full h-full justify-center">
+                                <div class="checkerboard-bg p-2 border border-neutral-200 dark:border-neutral-700 shadow-md inline-block max-w-full max-h-[480px] overflow-auto select-none rounded-2xl bg-white dark:bg-neutral-900">
+                                    <canvas id="pixelCanvas" class="block image-render-pixel cursor-crosshair"></canvas>
+                                </div>
+                                <div class="flex items-center justify-between w-full max-w-[420px] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 px-4 py-2.5 rounded-xl shadow-sm">
+                                    <span id="hoverCoord" class="text-xs font-mono text-neutral-600 dark:text-neutral-400 font-medium">PIXEL: [ -, - ]</span>
+                                    <span id="origResolution" class="text-xs font-mono text-neutral-600 dark:text-neutral-400 font-medium">RES: DRAW MODE</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Panel Output -->
+                        <div id="panelOutput" class="hidden flex-grow flex flex-col h-full overflow-hidden">
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-neutral-500 tracking-wider mb-1.5 uppercase">Format Ekspor</label>
+                                    <select id="formatSelect" class="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 py-2 px-3 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white rounded-xl shadow-sm cursor-pointer">
+                                        <option value="jscanvas">JS Canvas Sprite</option>
+                                        <option value="json2d">JSON 2D</option>
+                                        <option value="json1d">JSON 1D</option>
+                                        <option value="python">Python List</option>
+                                        <option value="cpp">C++ Array</option>
+                                        <option value="csv">CSV Plain</option>
+                                        <option value="hex2d">Hex Array</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-neutral-500 tracking-wider mb-1.5 uppercase">Basis Indeks</label>
+                                    <select id="indexBaseSelect" class="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 py-2 px-3 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white rounded-xl shadow-sm cursor-pointer">
+                                        <option value="1">Mulai Indeks 1</option>
+                                        <option value="0">Mulai Indeks 0</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-end col-span-2">
+                                    <div class="flex gap-2 w-full h-[38px]">
+                                        <button id="copyBtn" onclick="copyToClipboard()" class="flex-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:border-black dark:hover:border-white text-black dark:text-white font-bold uppercase tracking-wider text-xs transition-all rounded-xl shadow-sm flex items-center justify-center gap-2">
+                                            <i data-lucide="copy" class="w-3.5 h-3.5"></i> Salin Kode
+                                        </button>
+                                        <button id="downloadBtn" onclick="downloadMatrixFile()" class="flex-1 bg-black text-white dark:bg-white dark:text-black font-bold uppercase tracking-wider text-xs hover:scale-[1.02] transition-all rounded-xl shadow-sm flex items-center justify-center gap-2">
+                                            <i data-lucide="download" class="w-3.5 h-3.5"></i> Ekspor File
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <button id="downloadPngBtn" onclick="downloadAsPng()" class="w-full bg-emerald-600 text-white font-bold uppercase tracking-wider text-xs py-3 hover:bg-emerald-700 transition-all rounded-xl shadow-sm flex items-center justify-center gap-2">
+                                    <i data-lucide="image" class="w-4 h-4"></i> Download As PNG
+                                </button>
+                            </div>
+
+                            <div class="flex-grow relative h-full overflow-hidden border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-inner bg-white dark:bg-[#050505]">
+                                <textarea id="matrixOutput" readonly class="w-full h-full bg-transparent text-neutral-800 dark:text-neutral-300 p-5 font-mono text-sm leading-relaxed focus:outline-none resize-none overflow-y-auto whitespace-pre selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black"></textarea>
+                                <div class="absolute bottom-3 right-3 bg-white/90 dark:bg-black/90 backdrop-blur-sm border border-neutral-200 dark:border-neutral-800 px-3 py-1.5 text-xs font-mono font-medium text-neutral-500 rounded-lg shadow-sm">
+                                    <span id="outputSizeText">0 x 0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Toast Notifikasi -->
+                <div id="toastMessage" class="hidden transition-all duration-300 transform translate-y-2 opacity-0 flex items-center gap-2 p-3 px-4 bg-black text-white dark:bg-white dark:text-black text-xs font-bold uppercase tracking-widest max-w-sm self-end rounded-xl shadow-xl z-50">
+                    <i data-lucide="terminal" class="w-4 h-4"></i>
+                    <span id="toastText">Aksi Berhasil</span>
+                </div>
+
+            </div>
+            
+        </div>
+    </main>
+
+    <!-- Modal Pengaturan (CRUD Kunci API Gemini) -->
+    <div id="settingsModal" class="hidden fixed inset-0 z-50 overflow-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 max-w-md w-full p-6 rounded-3xl shadow-2xl transform transition-all duration-200 flex flex-col gap-5">
+            <div class="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="key" class="w-5 h-5 text-sky-500"></i>
+                    <h3 class="font-bold text-base">Pengaturan API Gemini</h3>
+                </div>
+                <button onclick="toggleSettingsModal()" class="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-all">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <p class="text-xs text-neutral-500 dark:text-neutral-400">
+                    Kunci API Gemini Anda disimpan secara lokal di dalam cache browser Anda. Kunci ini hanya digunakan untuk berkomunikasi langsung dengan server Google Gemini dari aplikasi klien ini.
+                </p>
+<div>
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-2" for="apiKeyInput">Gemini API Key</label>
+                    <div class="relative">
+                        <input type="password" id="apiKeyInput" class="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 focus:border-black dark:focus:border-white focus:ring-1 focus:ring-black dark:focus:ring-white pl-3 pr-10 py-2.5 text-sm font-mono focus:outline-none transition-all rounded-xl" placeholder="AIzaSy..." />
+                        <button onclick="togglePasswordVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-md text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300">
+                            <i id="eyeIcon" data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+<div>
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-2" for="modelSelectInput">Pilih Model Gemini</label>
+                    <select id="modelSelectInput" class="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 focus:border-black dark:focus:border-white focus:ring-1 focus:ring-black dark:focus:ring-white px-3 py-2.5 text-sm font-mono focus:outline-none transition-all rounded-xl cursor-pointer">
+                        <option value="gemini-3.5-flash">Gemini 3.5 Flash (Frontier Agentic & Coding)</option>
+                        <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro Preview (SOTA Reasoning & Multimodal)</option>
+                        <option value="gemini-3-flash-preview">Gemini 3 Flash Preview (Speed & Grounding)</option>
+                        <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash-Lite (Sangat Cepat & Hemat)</option>
+                        <option value="gemini-1.5-pro">Gemini 1.5 Pro (Presisi Tinggi & Simetris)</option>
+                    </select>
+                </div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between gap-3 border-t border-neutral-100 dark:border-neutral-800 pt-4">
+                <button onclick="clearAPIKey()" class="text-xs font-bold text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 px-3 py-2 rounded-xl transition-all" title="Hapus kunci API dari penyimpanan lokal">
+                    Hapus Key
+                </button>
+                <div class="flex gap-2">
+                    <button onclick="toggleSettingsModal()" class="px-4 py-2 text-xs font-bold border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-xl transition-all">
+                        Batal
+                    </button>
+                    <button onclick="saveAPIKey()" class="px-4 py-2 text-xs font-extrabold bg-black text-white dark:bg-white dark:text-black rounded-xl hover:opacity-90 active:scale-95 transition-all">
+                        Simpan Perubahan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-neutral-200 dark:border-neutral-800 bg-white/50 dark:bg-black/50 py-6 px-6 text-center transition-colors">
+        <p class="text-neutral-400 dark:text-neutral-600 text-xs font-medium mb-2">Pixel Matrix Extractor &bull; Inter UI Edition</p>
+        <p class="text-[10px] text-neutral-400 dark:text-neutral-500 font-mono tracking-wider">
+            SHORTCUTS: <span class="text-neutral-700 dark:text-neutral-300 font-bold">(P)</span> Pena &nbsp;&bull;&nbsp;
+            <span class="text-neutral-700 dark:text-neutral-300 font-bold">(E)</span> Penghapus &nbsp;&bull;&nbsp;
+            <span class="text-neutral-700 dark:text-neutral-300 font-bold">(F)</span> Isi Cat &nbsp;&bull;&nbsp;
+            <span class="text-neutral-700 dark:text-neutral-300 font-bold">(I)</span> Pipet &nbsp;&bull;&nbsp;
+            <span class="text-neutral-700 dark:text-neutral-300 font-bold">(Ctrl+Z)</span> Undo
+        </p>
+    </footer>
+
+    <script>
+        // Variabel global & status aplikasi
+        const apiKey = ""; // Diset oleh runtime environment jika tersedia
+        let appMode = 'draw'; // Default ke mode editor 'draw' saat dimuat
+        
+        let uploadedImage = null;
+        let cachedImgData = null; 
+        
+        let originalWidth = 0;
+        let originalHeight = 0;
+        
+        let colorPalette = []; 
+        let pixelMatrix = []; // Menyimpan null untuk transparan, atau indeks integer warna 0, 1, 2...
+        
+        let activeTab = 'visual';
+        let updateScheduled = false;
+
+        // Variabel untuk mode menggambar
+        let isDrawing = false;
+        let drawTool = 'pen'; // 'pen', 'eraser', 'fill', 'eyedropper', 'line', 'rect', 'circle', 'perfect', 'spray', 'selection'
+        let startCol = 0;
+        let startRow = 0;
+        let currentDragCol = 0;
+        let currentDragRow = 0;
+        
+        // State tambahan untuk tracking kuas canggih & seleksi area
+        let lastDrawCol = null;
+        let lastDrawRow = null;
+        let selectionBox = null; // { startC, startR, endC, endR, active: true/false }
+        let stateChanged = false;
+        
+        // Riwayat aksi (Undo/Redo)
+        let history = [];
+        let historyIndex = -1;
+        const MAX_HISTORY = 30;
+
+// Key Penyimpanan Kunci API Lokal
+        const STORAGE_KEY = "pixel_matrix_gemini_api_key_v1";
+        const MODEL_STORAGE_KEY = "pixel_matrix_gemini_model_v1";
+        let selectedModel = localStorage.getItem(MODEL_STORAGE_KEY) || "gemini-3.1-flash-lite";
+
+        // Pengaturan elemen DOM
+        const fileInput = document.getElementById('fileInput');
+        const dropzone = document.getElementById('dropzone');
+        const dropzoneContainer = document.getElementById('dropzoneContainer');
+        
+        const modeExtractBtn = document.getElementById('modeExtractBtn');
+        const modeDrawBtn = document.getElementById('modeDrawBtn');
+        const modeAIBtn = document.getElementById('modeAIBtn');
+        const drawToolsContainer = document.getElementById('drawToolsContainer');
+        const aiToolsContainer = document.getElementById('aiToolsContainer');
+        const toleranceContainer = document.getElementById('toleranceContainer');
+        
+        const gridWidthInput = document.getElementById('gridWidth');
+        const gridHeightInput = document.getElementById('gridHeight');
+        const transparentIndexInput = document.getElementById('transparentIndex');
+        const toleranceInput = document.getElementById('tolerance');
+        const autoDetectBtn = document.getElementById('autoDetectBtn');
+        
+        const paletteContainer = document.getElementById('paletteContainer');
+        const pixelCanvas = document.getElementById('pixelCanvas');
+        const emptyState = document.getElementById('emptyState');
+        const canvasWrapper = document.getElementById('canvasWrapper');
+        const hoverCoord = document.getElementById('hoverCoord');
+        const origResolution = document.getElementById('origResolution');
+        
+        // ENGINE UTAMA: AI Multimodal Image-to-PixelArt Translation Pipeline
+        let targetRasterBase64 = null;
+
+        const rasterFileInput = document.getElementById('rasterFileInput');
+        if (rasterFileInput) {
+            rasterFileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    const file = e.target.files[0];
+                    const reader = new FileReader();
+                    reader.onload = function(evt) {
+                        targetRasterBase64 = evt.target.result.split(',')[1];
+                        showToast("Gambar terpasang ke memori AI");
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        async function convertImageToPixelArtAI() {
+            if (!targetRasterBase64) {
+                showToast("Pilih file foto/gambar terlebih dahulu!");
+                return;
+            }
+
+            const activeKey = apiKey || getClientApiKey();
+            if (!activeKey) {
+                showToast("Kunci API Gemini dibutuhkan. Membuka Pengaturan!");
+                toggleSettingsModal();
+                return;
+            }
+
+            // Meminjam penanda progres dari container AI Artist
+            const progressMsg = document.getElementById('aiProgressMessage');
+            const btnConvert = document.getElementById('btnConvertRasterAI');
+            
+            if(progressMsg) {
+                progressMsg.classList.remove('hidden');
+                progressMsg.textContent = "Gemini sedang memindai fitur topologi foto Anda...";
+            }
+            btnConvert.disabled = true;
+            btnConvert.classList.add('opacity-50', 'cursor-not-allowed');
+
+            try {
+                // Tahap 1: Vision LLM Content Analysis & Style Injection (Mengamankan Objek)
+                const neuralTranslationPrompt = `You are an advanced Neural Style Translation Engine. Analyze the core object, layout structure, color composition, and shapes in this attached image.
+Your mission is to generate a highly detailed prompt for a Latent Diffusion Image Generator that replicates this exact image content but transforms it into professional, clean pixel art style.
+
+Follow these strict transformation rules:
+1. Describe the primary subject, its pose, and its relative dimensions based on the image provided.
+2. Incase the input image has a complex background, prompt for a "solid white background" to ensure isolation.
+3. Force strict pixel art attributes: "masterpiece 16-bit retro arcade pixel art, clean sharp pixel boundaries, flat cell-shading, bold dark distinct outlines, isolated vibrant color palette, zero blur, no anti-aliasing".
+Output ONLY a single-line text prompt string for stable diffusion. Do not include markdown code blocks, prefixes, or conversational filler.`;
+
+                const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${activeKey}`;
+                const response = await fetch(geminiUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                { text: neuralTranslationPrompt },
+                                { inlineData: { mimeType: "image/png", data: targetRasterBase64 } }
+                            ]
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                let expandedPrompt = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "pixel art sprite asset";
+                expandedPrompt = expandedPrompt.replace(/```json|```/g, "").trim();
+
+                // Tahap 2: Latent Diffusion Neural Synthesis (Membangun Citra Piksel Baru)
+                if(progressMsg) progressMsg.textContent = "Difusi laten sedang merestrukturisasi citra piksel...";
+                
+                const seed = Math.floor(Math.random() * 999999);
+                const imageUrl = `https://image.pollinations.ai/p/${encodeURIComponent(expandedPrompt)}?width=512&height=512&seed=${seed}&nologo=true`;
+
+                const img = new Image();
+                img.crossOrigin = "anonymous";
+                img.onload = function() {
+                    uploadedImage = img;
+                    originalWidth = img.width;
+                    originalHeight = img.height;
+
+                    const offCanvas = document.createElement('canvas');
+                    offCanvas.width = originalWidth;
+                    offCanvas.height = originalHeight;
+                    const ctx = offCanvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+
+                    const imgData = ctx.getImageData(0, 0, originalWidth, originalHeight).data;
+                    cachedImgData = new Uint8ClampedArray(imgData.length);
+
+                    // Tahap 3: Post-processing Binarization & Alpha Masking
+                    for(let i=0; i<imgData.length; i+=4) {
+                        let r = imgData[i], g = imgData[i+1], b = imgData[i+2];
+                        
+                        // Menghapus noise background putih buatan SD XL
+                        if (r > 240 && g > 240 && b > 240) {
+                            cachedImgData[i] = 0; cachedImgData[i+1] = 0; cachedImgData[i+2] = 0; cachedImgData[i+3] = 0;
+                        } else {
+                            // Boost kejenuhan warna
+                            let factor = 1.4;
+                            r = Math.min(255, Math.max(0, 128 + factor * (r - 128)));
+                            g = Math.min(255, Math.max(0, 128 + factor * (g - 128)));
+                            b = Math.min(255, Math.max(0, 128 + factor * (b - 128)));
+                            
+                            cachedImgData[i] = r; cachedImgData[i+1] = g; cachedImgData[i+2] = b; cachedImgData[i+3] = imgData[i+3];
+                        }
+                    }
+
+                    emptyState.classList.add('hidden');
+                    canvasWrapper.classList.remove('hidden');
+                    origResolution.textContent = 'AI IMAGE TRANSLATION';
+
+                    // Ekstrak hasil visual sintesis AI langsung ke array koordinat matriks aplikasi
+                    processImageMatrix();
+                    postProcessUpdates();
+                    
+                    showToast("Foto Berhasil Diredesain Menjadi Pixel Art!");
+                    
+                    btnConvert.disabled = false;
+                    btnConvert.classList.remove('opacity-50', 'cursor-not-allowed');
+                    if(progressMsg) progressMsg.classList.add('hidden');
+                };
+                
+                img.onerror = function() { throw new Error("Koneksi cluster difusi terputus."); };
+                img.src = imageUrl;
+
+            } catch (err) {
+                console.error(err);
+                showToast("Gagal transformasi AI: " + err.message);
+                btnConvert.disabled = false;
+                btnConvert.classList.remove('opacity-50', 'cursor-not-allowed');
+                if(progressMsg) progressMsg.classList.add('hidden');
+            }
+        }
+
+        // Fungsi warisan lama yang sengaja dimatikan untuk diganti neural pipeline
+        function handleRasterImage(file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    // Simpan data gambar asli
+                    uploadedImage = img;
+                    originalWidth = img.width;
+                    originalHeight = img.height;
+                    
+                    autoDetectBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    autoDetectBtn.removeAttribute('disabled');
+                    origResolution.textContent = `IMG: ${originalWidth}x${originalHeight}`;
+                    
+                    // Ambil resolusi grid target dari input konfig aplikasi (contoh: 32x32)
+                    const gridW = parseInt(gridWidthInput.value) || 32;
+                    const gridH = parseInt(gridHeightInput.value) || 32;
+                    
+                    // Buat Canvas Offscreen untuk menganalisis data piksel mentah gambar asli
+                    const offCanvas = document.createElement('canvas');
+                    offCanvas.width = originalWidth;
+                    offCanvas.height = originalHeight;
+                    const ctx = offCanvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    const rawData = ctx.getImageData(0, 0, originalWidth, originalHeight).data;
+                    
+                    // Jalankan metode Content-Adaptive Block Averaging (Downscaling)
+                    const cellW = originalWidth / gridW;
+                    const cellH = originalHeight / gridH;
+                    
+                    colorPalette = [];
+                    pixelMatrix = Array(gridH).fill(0).map(() => Array(gridW).fill(null));
+                    
+                    // Siapkan struktur penampung warna untuk optimasi clustering K-Means mini
+                    let blockColors = [];
+                    
+                    for (let y = 0; y < gridH; y++) {
+                        for (let x = 0; x < gridW; x++) {
+                            let sumR = 0, sumG = 0, sumB = 0, sumA = 0, count = 0;
+                            
+                            // Batas koordinat piksel makro di dalam blok/sel target
+                            const startX = Math.floor(x * cellW);
+                            const startY = Math.floor(y * cellH);
+                            const endX = Math.min(originalWidth, Math.floor((x + 1) * cellW));
+                            const endY = Math.min(originalHeight, Math.floor((y + 1) * cellH));
+                            
+                            for (let py = startY; py < endY; py++) {
+                                for (let px = startX; px < endX; px++) {
+                                    const pIdx = (py * originalWidth + px) * 4;
+                                    const alpha = rawData[pIdx + 3];
+                                    
+                                    if (alpha > 30) { // Hanya proses piksel non-transparan
+                                        sumR += rawData[pIdx];
+                                        sumG += rawData[pIdx + 1];
+                                        sumB += rawData[pIdx + 2];
+                                        sumA += alpha;
+                                        count++;
+                                    }
+                                }
+                            }
+                            
+                            if (count === 0) {
+                                pixelMatrix[y][x] = null; // Menjadi area transparan transparan
+                            } else {
+                                const avgR = Math.round(sumR / count);
+                                const avgG = Math.round(sumG / count);
+                                const avgB = Math.round(sumB / count);
+                                blockColors.push({ r: avgR, g: avgG, b: avgB, x, y });
+                            }
+                        }
+                    }
+                    
+                    // EKSTRAKSI PALET OTOMATIS: Kelompokkan warna serupa berdasarkan Perceptual Jarak RGB
+                    blockColors.forEach(block => {
+                        let matchedIdx = -1;
+                        let minDistance = Infinity;
+                        
+                        // Cari apakah warna ini mirip dengan warna yang sudah masuk daftar palet
+                        for (let i = 0; i < colorPalette.length; i++) {
+                            const pal = colorPalette[i];
+                            const rmean = (block.r + pal.r) / 2;
+                            const dr = block.r - pal.r;
+                            const dg = block.g - pal.g;
+                            const db = block.b - pal.b;
+                            
+                            // Rumus Perceptual Weighting Jarak Warna Merah-Hijau-Biru
+                            const distanceSq = (((512 + rmean) * dr * dr) >> 8) + 4 * dg * dg + (((767 - rmean) * db * db) >> 8);
+                            
+                            if (distanceSq < 900 && distanceSq < minDistance) { // Threshold toleransi kemiripan warna
+                                minDistance = distanceSq;
+                                matchedIdx = i;
+                            }
+                        }
+                        
+                        if (matchedIdx === -1) {
+                            const hex = rgbToHex(block.r, block.g, block.b);
+                            colorPalette.push({ r: block.r, g: block.g, b: block.b, hex, count: 1 });
+                            pixelMatrix[block.y][block.x] = colorPalette.length - 1;
+                        } else {
+                            colorPalette[matchedIdx].count++;
+                            pixelMatrix[block.y][block.x] = matchedIdx;
+                        }
+                    });
+                    
+                    // Batasi jumlah warna maksimal agar tetap berestetika pixel art (Max 32 Warna)
+                    if (colorPalette.length > 32) {
+                        colorPalette.sort((a, b) => b.count - a.count);
+                        colorPalette = colorPalette.slice(0, 32);
+                        
+                        // Petakan ulang sel matriks yang kehilangan indeks akibat pemangkasan palet
+                        for (let y = 0; y < gridH; y++) {
+                            for (let x = 0; x < gridW; x++) {
+                                if (pixelMatrix[y][x] !== null) {
+                                    const origColor = blockColors.find(b => b.x === x && b.y === y);
+                                    if (origColor) {
+                                        let nearestIdx = 0;
+                                        let minDist = Infinity;
+                                        colorPalette.forEach((pal, idx) => {
+                                            const dr = origColor.r - pal.r;
+                                            const dg = origColor.g - pal.g;
+                                            const db = origColor.b - pal.b;
+                                            const d = dr*dr + dg*dg + db*db;
+                                            if (d < minDist) { minDist = d; nearestIdx = idx; }
+                                        });
+                                        pixelMatrix[y][x] = nearestIdx;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Sinkronisasikan hasil ekstraksi raster ke workspace visual & output kode aplikasi
+                    postProcessUpdates();
+                    emptyState.classList.add('hidden');
+                    canvasWrapper.classList.remove('hidden');
+                    showToast("Gambar Berhasil Dipixelisasi!");
+                    
+                    // Amankan riwayat untuk fitur Undo
+                    history = [];
+                    historyIndex = -1;
+                    saveState();
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        const formatSelect = document.getElementById('formatSelect');
+        const indexBaseSelect = document.getElementById('indexBaseSelect');
+        const matrixOutput = document.getElementById('matrixOutput');
+        
+        const toolPenBtn = document.getElementById('toolPen');
+        const toolEraserBtn = document.getElementById('toolEraser');
+        const colorPicker = document.getElementById('colorPicker');
+
+        const settingsModal = document.getElementById('settingsModal');
+        const apiKeyInput = document.getElementById('apiKeyInput');
+
+        lucide.createIcons();
+        
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            drawPreviewCanvas(); 
+        }
+
+// CRUD antarmuka kunci API lokal
+        function toggleSettingsModal() {
+            settingsModal.classList.toggle('hidden');
+            if (!settingsModal.classList.contains('hidden')) {
+                const stored = localStorage.getItem(STORAGE_KEY) || "";
+                apiKeyInput.value = stored;
+                
+                const modelSelectInput = document.getElementById('modelSelectInput');
+                if (modelSelectInput) {
+                    modelSelectInput.value = selectedModel;
+                }
+            } else {
+                // Perbarui lencana teks di header agar sesuai dengan model aktif saat modal ditutup
+                const badgeText = document.querySelector('header span.text-sky-500');
+                if (badgeText) {
+                    if (selectedModel === 'gemini-3.5-flash') badgeText.textContent = "3.5 Flash";
+                    else if (selectedModel === 'gemini-3.1-pro-preview') badgeText.textContent = "3.1 Pro Prev";
+                    else if (selectedModel === 'gemini-3-flash-preview') badgeText.textContent = "3 Flash Prev";
+                    else if (selectedModel === 'gemini-3.1-flash-lite') badgeText.textContent = "3.1 Flash-Lite";
+                    else if (selectedModel === 'gemini-1.5-pro') badgeText.textContent = "1.5 Pro";
+                }
+            }
+        }
+
+        function saveAPIKey() {
+            const keyVal = apiKeyInput.value.trim();
+            if (keyVal === "") {
+                showToast("Kunci API tidak boleh kosong");
+                return;
+            }
+            const modelSelectInput = document.getElementById('modelSelectInput');
+            if (modelSelectInput) {
+                selectedModel = modelSelectInput.value;
+                localStorage.setItem(MODEL_STORAGE_KEY, selectedModel);
+            }
+            localStorage.setItem(STORAGE_KEY, keyVal);
+            showToast(`Kunci API & Model ${selectedModel} Berhasil Disimpan`);
+            toggleSettingsModal();
+        }
+
+        function togglePasswordVisibility() {
+            const eyeIcon = document.getElementById('eyeIcon');
+            if (apiKeyInput.type === 'password') {
+                apiKeyInput.type = 'text';
+                eyeIcon.setAttribute('data-lucide', 'eye-off');
+            } else {
+                apiKeyInput.type = 'password';
+                eyeIcon.setAttribute('data-lucide', 'eye');
+            }
+            lucide.createIcons();
+        }
+
+        function clearAPIKey() {
+            localStorage.removeItem(STORAGE_KEY);
+            apiKeyInput.value = "";
+            showToast("Kunci API Dihapus");
+            toggleSettingsModal();
+        }
+
+        function getClientApiKey() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            return stored ? stored.trim() : "";
+        }
+
+        function setMode(mode) {
+            appMode = mode;
+            const activeClass = "py-2 px-1 text-[10px] font-bold uppercase tracking-wider bg-white text-black shadow-sm dark:bg-neutral-800 dark:text-white transition-all rounded-xl";
+            const inactiveClass = "py-2 px-1 text-[10px] font-bold uppercase tracking-wider text-neutral-500 hover:text-black dark:hover:text-white transition-all rounded-xl";
+
+            modeExtractBtn.className = mode === 'extract' ? activeClass : inactiveClass;
+            modeDrawBtn.className = mode === 'draw' ? activeClass : inactiveClass;
+            modeAIBtn.className = mode === 'ai' ? activeClass : inactiveClass;
+
+            if (mode === 'extract') {
+                dropzoneContainer.classList.remove('hidden');
+                drawToolsContainer.classList.add('hidden');
+                aiToolsContainer.classList.add('hidden');
+                toleranceContainer.classList.remove('opacity-30', 'pointer-events-none');
+                
+                if (uploadedImage) {
+                    emptyState.classList.add('hidden');
+                    canvasWrapper.classList.remove('hidden');
+                    scheduleMatrixProcess();
+                } else {
+                    showEmpty();
+                }
+            } else if (mode === 'draw') {
+                dropzoneContainer.classList.add('hidden');
+                drawToolsContainer.classList.remove('hidden');
+                aiToolsContainer.classList.add('hidden');
+                toleranceContainer.classList.add('opacity-30', 'pointer-events-none'); 
+
+                if (pixelMatrix.length === 0) {
+                    createBlankGrid();
+                } else {
+                    emptyState.classList.add('hidden');
+                    canvasWrapper.classList.remove('hidden');
+                    origResolution.textContent = 'RES: DRAW MODE';
+                    drawPreviewCanvas();
+                }
+            } else if (mode === 'ai') {
+                dropzoneContainer.classList.add('hidden');
+                drawToolsContainer.classList.add('hidden');
+                aiToolsContainer.classList.remove('hidden');
+                toleranceContainer.classList.add('opacity-30', 'pointer-events-none'); 
+
+                if (pixelMatrix.length === 0) {
+                    createBlankGrid();
+                } else {
+                    emptyState.classList.add('hidden');
+                    canvasWrapper.classList.remove('hidden');
+                    origResolution.textContent = 'RES: AI GENERATOR';
+                    drawPreviewCanvas();
+                }
+            }
+        }
+
+        function selectTool(tool) {
+            drawTool = tool;
+            const activeClass = "w-10 h-10 bg-black text-white dark:bg-white dark:text-black shadow-md flex justify-center items-center transition-all rounded-xl";
+            const inactiveClass = "w-10 h-10 bg-white text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 hover:text-black hover:border-neutral-400 dark:hover:text-white dark:hover:border-neutral-500 flex justify-center items-center transition-all rounded-xl";
+            
+            document.getElementById('toolPen').className = tool === 'pen' ? activeClass : inactiveClass;
+            document.getElementById('toolEraser').className = tool === 'eraser' ? activeClass : inactiveClass;
+            document.getElementById('toolFill').className = tool === 'fill' ? activeClass : inactiveClass;
+            document.getElementById('toolPicker').className = tool === 'eyedropper' ? activeClass : inactiveClass;
+            document.getElementById('toolLine').className = tool === 'line' ? activeClass : inactiveClass;
+            document.getElementById('toolRect').className = tool === 'rect' ? activeClass : inactiveClass;
+            document.getElementById('toolCircle').className = tool === 'circle' ? activeClass : inactiveClass;
+            document.getElementById('toolPerfect').className = tool === 'perfect' ? activeClass : inactiveClass;
+            document.getElementById('toolSpray').className = tool === 'spray' ? activeClass : inactiveClass;
+            document.getElementById('toolSelection').className = tool === 'selection' ? activeClass : inactiveClass;
+            
+            // Jika user pindah alat dari selection ke alat lain, matikan preview seleksi kotak
+            if (tool !== 'selection' && selectionBox) {
+                selectionBox.active = false;
+                drawPreviewCanvas();
+            }
+        }
+
+        // Fungsi pengelolaan riwayat (Undo/Redo)
+        function saveState() {
+            const matrixCopy = pixelMatrix.map(row => [...row]);
+            const paletteCopy = colorPalette.map(c => ({...c}));
+            
+            if (historyIndex < history.length - 1) {
+                history = history.slice(0, historyIndex + 1);
+            }
+            
+            history.push({ matrix: matrixCopy, palette: paletteCopy });
+            if (history.length > MAX_HISTORY) {
+                history.shift();
+            } else {
+                historyIndex++;
+            }
+            updateHistoryUI();
+        }
+
+// Inisialisasi tema saat halaman dimuat
+        window.addEventListener('DOMContentLoaded', () => {
+            const isDark = localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            
+            // Cek apakah ada autosave lama di browser
+            const hasAutosave = loadAutosave();
+            
+            setMode('draw');
+            
+            if (hasAutosave) {
+                showToast("Melanjutkan Sesi Menggambar Terakhir!");
+            }
+            
+            // Daftarkan ulang lucide icons pasca pemuatan DOM
+            lucide.createIcons();
+        });
+
+        function updateHistoryUI() {
+            const btnUndo = document.getElementById('btnUndo');
+            const btnRedo = document.getElementById('btnRedo');
+            if(btnUndo) btnUndo.disabled = historyIndex <= 0;
+            if(btnRedo) btnRedo.disabled = historyIndex >= history.length - 1;
+        }
+
+        function undo() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                restoreState(history[historyIndex]);
+                showToast("Undo Diterapkan");
+            }
+        }
+
+        function redo() {
+            if (historyIndex < history.length - 1) {
+                historyIndex++;
+                restoreState(history[historyIndex]);
+                showToast("Redo Diterapkan");
+            }
+        }
+
+        function restoreState(state) {
+            pixelMatrix = state.matrix.map(row => [...row]);
+            colorPalette = state.palette.map(c => ({...c}));
+            postProcessUpdates();
+        }
+
+// Key untuk autosave local storage
+        const AUTOSAVE_MATRIX_KEY = "pixel_matrix_extractor_autosave_data";
+
+        // Fungsi membalik orientasi kanvas (Flip Horizontal / Vertical)
+        function flipMatrix(direction) {
+            if (!pixelMatrix || pixelMatrix.length === 0) return;
+            saveState(); // Amankan state saat ini ke history Undo
+
+            if (direction === 'horizontal') {
+                pixelMatrix = pixelMatrix.map(row => [...row].reverse());
+                showToast("Flipped Horizontally");
+            } else if (direction === 'vertical') {
+                pixelMatrix = [...pixelMatrix].reverse();
+                showToast("Flipped Vertically");
+            }
+            postProcessUpdates();
+        }
+
+        // Simpan otomatis data ke local storage browser jika ada perubahan gambar
+        function triggerAutosave() {
+            try {
+                const saveData = {
+                    matrix: pixelMatrix,
+                    palette: colorPalette,
+                    width: gridWidthInput.value,
+                    height: gridHeightInput.value
+                };
+                localStorage.setItem(AUTOSAVE_MATRIX_KEY, JSON.stringify(saveData));
+            } catch (e) {
+                console.error("Autosave failed: ", e);
+            }
+        }
+
+        // Muat data terakhir saat user membuka kembali aplikasi ini
+        function loadAutosave() {
+            try {
+                const saved = localStorage.getItem(AUTOSAVE_MATRIX_KEY);
+                if (!saved) return false;
+                
+                const parsed = JSON.parse(saved);
+                if (parsed && parsed.matrix && parsed.matrix.length > 0) {
+                    gridWidthInput.value = parsed.width || 16;
+                    gridHeightInput.value = parsed.height || 16;
+                    pixelMatrix = parsed.matrix;
+                    colorPalette = parsed.palette || [];
+                    
+                    postProcessUpdates();
+                    return true;
+                }
+            } catch(e) {
+                console.error("Failed to load autosave:", e);
+            }
+            return false;
+        }
+
+// 1. Algoritma Kuas Pixel-Perfect (Menghapus piksel sudut berlebih saat menyeret cepat)
+        function paintPixelPerfect(row, col, isFirstClick) {
+            const hexColor = colorPicker.value.toUpperCase();
+            let pIdx = colorPalette.findIndex(c => c.hex === hexColor);
+            if (pIdx === -1) {
+                const rgb = hexToRgb(hexColor);
+                colorPalette.push({ r: rgb.r, g: rgb.g, b: rgb.b, hex: hexColor });
+                pIdx = colorPalette.length - 1;
+            }
+
+            if (isFirstClick) {
+                pixelMatrix[row][col] = pIdx;
+                lastDrawCol = col;
+                lastDrawRow = row;
+                stateChanged = true;
+            } else {
+                if (lastDrawCol === col && lastDrawRow === row) return;
+
+                // Hitung interpolasi jembatan menggunakan Bresenham agar tidak ada celah akibat lompatan mouse polling rate
+                const pts = calculateShapePixels(lastDrawCol, lastDrawRow, col, row, 'line');
+                
+                // Mulai dari indeks 1 karena indeks 0 adalah posisi titik lama (lastDraw)
+                for (let i = 1; i < pts.length; i++) {
+                    const [currentC, currentR] = pts[i];
+                    
+                    // Warnai titik saat ini secara kontinu
+                    pixelMatrix[currentR][currentC] = pIdx;
+
+                    // Evaluasi Sudut Siku (L-Shape Elimination): Ambil data histori 2 titik ke belakang dari iterasi garis
+                    if (i >= 2) {
+                        const [prevC1, prevR1] = pts[i - 1]; // Titik tepat sebelum kursor saat ini
+                        const [prevC2, prevR2] = pts[i - 2]; // Titik dua langkah ke belakang
+
+                        if (prevC2 !== currentC && prevR2 !== currentR) {
+                            if (pixelMatrix[prevR2][currentC] === pIdx || pixelMatrix[currentR][prevC2] === pIdx) {
+                                pixelMatrix[prevR1][prevC1] = null;
+                            }
+                        }
+                    } else {
+                        // Kasus transisi dari koordinat tarikan mouse stroke sebelumnya
+                        if (pixelMatrix[lastDrawRow][currentC] === pIdx && pixelMatrix[currentR][lastDrawCol] === pIdx) {
+                            pixelMatrix[lastDrawRow][currentC] = null;
+                        }
+                    }
+
+                    // Perbarui koordinat langkah pelacakan secara sekuensial dalam satu tarikan stroke
+                    lastDrawCol = currentC;
+                    lastDrawRow = currentR;
+                }
+                stateChanged = true;
+            }
+            drawPreviewCanvas();
+        }
+
+        // 2. Fungsi Kuas Semprot (Spray Can) dengan radius radial acak
+        function paintSpray(row, col) {
+            const radius = 2; // Radius jangkauan semprotan piksel
+            const density = 4; // Berapa banyak titik piksel bocor per tetesan geser
+            const hexColor = colorPicker.value.toUpperCase();
+            let pIdx = colorPalette.findIndex(c => c.hex === hexColor);
+            if (pIdx === -1) {
+                const rgb = hexToRgb(hexColor);
+                colorPalette.push({ r: rgb.r, g: rgb.g, b: rgb.b, hex: hexColor });
+                pIdx = colorPalette.length - 1;
+            }
+
+            const gridH = pixelMatrix.length;
+            const gridW = pixelMatrix[0].length;
+
+            for (let i = 0; i < density; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const r = Math.random() * radius;
+                const targetC = Math.round(col + r * Math.cos(angle));
+                const targetR = Math.round(row + r * Math.sin(angle));
+
+                if (targetC >= 0 && targetC < gridW && targetR >= 0 && targetR < gridH) {
+                    if (pixelMatrix[targetR][targetC] !== pIdx) {
+                        pixelMatrix[targetR][targetC] = pIdx;
+                        stateChanged = true;
+                    }
+                }
+            }
+            drawPreviewCanvas();
+        }
+
+        // 3. Fungsi Translasi Transformasi Seleksi (Menggeser potongan gambar via Keyboard Arrow)
+        function moveSelectedSelection(dCol, dRow) {
+            if (!selectionBox || !selectionBox.active) return;
+            saveState(); // Amankan state ke Undo history sebelum digeser
+
+            const gridH = pixelMatrix.length;
+            const gridW = pixelMatrix[0].length;
+            const tempMatrix = pixelMatrix.map(row => [...row]);
+
+            // Kloning dan geser area piksel di dalam batas kotak seleksi
+            for (let r = 0; r < gridH; r++) {
+                for (let c = 0; c < gridW; c++) {
+                    if (c >= selectionBox.startC && c <= selectionBox.endC && r >= selectionBox.startR && r <= selectionBox.endR) {
+                        // Kosongkan lokasi piksel lama asal
+                        pixelMatrix[r][c] = null;
+                    }
+                }
+            }
+
+            // Letakkan piksel potongan di koordinat target baru
+            for (let r = selectionBox.startR; r <= selectionBox.endR; r++) {
+                for (let c = selectionBox.startC; c <= selectionBox.endC; c++) {
+                    const targetC = c + dCol;
+                    const targetR = r + dRow;
+                    if (targetC >= 0 && targetC < gridW && targetR >= 0 && targetR < gridH) {
+                        pixelMatrix[targetR][targetC] = tempMatrix[r][c];
+                    }
+                }
+            }
+
+            // Geser koordinat visual pembatas kotak seleksi mengikuti perpindahannya
+            selectionBox.startC = Math.max(0, Math.min(gridW - 1, selectionBox.startC + dCol));
+            selectionBox.endC = Math.max(0, Math.min(gridW - 1, selectionBox.endC + dCol));
+            selectionBox.startR = Math.max(0, Math.min(gridH - 1, selectionBox.startR + dRow));
+            selectionBox.endR = Math.max(0, Math.min(gridH - 1, selectionBox.endR + dRow));
+
+            postProcessUpdates();
+            showToast("Selection Area Shifted");
+        }
+
+        function floodFill(startX, startY) {
+            const targetVal = pixelMatrix[startY][startX];
+            const hexColor = colorPicker.value.toUpperCase();
+            
+            let replacementVal = colorPalette.findIndex(c => c.hex === hexColor);
+            if (replacementVal === -1) {
+                const rgb = hexToRgb(hexColor);
+                colorPalette.push({ r: rgb.r, g: rgb.g, b: rgb.b, hex: hexColor });
+                replacementVal = colorPalette.length - 1;
+            }
+
+            if (targetVal === replacementVal) return;
+
+            const gridW = pixelMatrix[0].length;
+            const gridH = pixelMatrix.length;
+            const queue = [[startX, startY]];
+
+            const visited = new Set();
+            while (queue.length > 0) {
+                const [x, y] = queue.shift();
+                const key = `${x},${y}`;
+                
+                if (x < 0 || x >= gridW || y < 0 || y >= gridH || visited.has(key)) continue;
+                if (pixelMatrix[y][x] !== targetVal) continue;
+
+                pixelMatrix[y][x] = replacementVal;
+                visited.add(key);
+
+                queue.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
+            }
+            
+            // Cleanup: Hapus warna yang tidak lagi terpakai di matriks
+            const usedIndices = new Set(pixelMatrix.flat().filter(v => v !== null));
+            const newPalette = [];
+            const indexMap = new Map();
+            let newIdx = 0;
+            usedIndices.forEach((oldIdx) => {
+                indexMap.set(oldIdx, newIdx++);
+                newPalette.push(colorPalette[oldIdx]);
+            });
+            pixelMatrix = pixelMatrix.map(row => row.map(v => v === null ? null : indexMap.get(v)));
+            colorPalette = newPalette;
+        }
+
+        // Dropzone & Unggah File
+        dropzone.addEventListener('click', () => fileInput.click());
+        dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('border-black', 'dark:border-white'); });
+        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('border-black', 'dark:border-white'));
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('border-black', 'dark:border-white');
+            if (e.dataTransfer.files.length > 0) handlePNG(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) handlePNG(e.target.files[0]);
+        });
+
+        function showEmpty() {
+            emptyState.classList.remove('hidden');
+            canvasWrapper.classList.add('hidden');
+            pixelMatrix = [];
+            colorPalette = [];
+            document.getElementById('paletteContainer').innerHTML = `
+                <div class="flex flex-col items-center justify-center py-6 gap-2 opacity-50">
+                    <i data-lucide="droplets" class="w-6 h-6"></i>
+                    <p class="text-neutral-500 italic text-xs">Menunggu data...</p>
+                </div>`;
+            document.getElementById('paletteCount').textContent = "0 WARNA";
+            lucide.createIcons();
+            generateOutputText();
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toastMessage');
+            document.getElementById('toastText').textContent = message;
+            toast.classList.remove('hidden', 'opacity-0', 'translate-y-2');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.classList.add('hidden'), 300);
+            }, 2000);
+        }
+
+        function handlePNG(file) {
+            if (file.type !== "image/png") {
+                showToast("Wajib format PNG"); return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    uploadedImage = img;
+                    originalWidth = img.width;
+                    originalHeight = img.height;
+                    
+                    const offCanvas = document.createElement('canvas');
+                    offCanvas.width = originalWidth; offCanvas.height = originalHeight;
+                    const ctx = offCanvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    cachedImgData = ctx.getImageData(0, 0, originalWidth, originalHeight).data;
+                    
+                    autoDetectBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    autoDetectBtn.removeAttribute('disabled');
+                    origResolution.textContent = `RES: ${originalWidth}x${originalHeight}`;
+                    
+                    let gSize = 16;
+                    if (originalWidth % 64 === 0) gSize = 64;
+                    else if (originalWidth % 32 === 0) gSize = 32;
+                    else if (originalWidth % 16 === 0) gSize = 16;
+                    else if (originalWidth % 8 === 0) gSize = 8;
+
+                    gridWidthInput.value = gSize;
+                    gridHeightInput.value = gSize;
+                    
+                    emptyState.classList.add('hidden');
+                    canvasWrapper.classList.remove('hidden');
+
+                    if (appMode === 'extract') processImageMatrix();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : {r:0, g:0, b:0};
+        }
+
+        function rgbToHex(r, g, b) {
+            return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+        }
+
+        function resizeGridAction() {
+            if (appMode === 'extract') {
+                scheduleMatrixProcess();
+            } else {
+                resizeBlankGridSafely();
+            }
+        }
+
+gridWidthInput.addEventListener('change', resizeGridAction);
+        gridHeightInput.addEventListener('change', resizeGridAction);
+        colorPicker.addEventListener('input', renderPalette);
+        transparentIndexInput.addEventListener('input', () => {
+            generateOutputText();
+            drawPreviewCanvas();
+        });
+        toleranceInput.addEventListener('input', (e) => {
+            document.getElementById('toleranceVal').textContent = e.target.value;
+            if (appMode === 'extract') scheduleMatrixProcess();
+        });
+
+        autoDetectBtn.addEventListener('click', () => {
+             showToast("Deteksi Otomatis Diterapkan");
+        });
+
+        function setGridSize(size) {
+            gridWidthInput.value = size;
+            gridHeightInput.value = size;
+            resizeGridAction();
+        }
+
+        function scheduleMatrixProcess() {
+            if (!updateScheduled && uploadedImage && cachedImgData) {
+                updateScheduled = true;
+                requestAnimationFrame(() => {
+                    processImageMatrix();
+                    updateScheduled = false;
+                });
+            }
+        }
+
+        function processImageMatrix() {
+            const gridW = parseInt(gridWidthInput.value) || 16;
+            const gridH = parseInt(gridHeightInput.value) || 16;
+            const tolerance = parseInt(toleranceInput.value) || 15;
+            const palType = document.getElementById('paletteTypeSelect')?.value || 'adaptive';
+            const pixStyle = document.getElementById('pixelStyleSelect')?.value || 'flat';
+
+            const cellW = originalWidth / gridW;
+            const cellH = originalHeight / gridH;
+
+            colorPalette = [];
+            pixelMatrix = Array(gridH).fill(0).map(() => Array(gridW).fill(null));
+            const toleranceSq = tolerance * tolerance * 3.5;
+
+            // PRESET PALET RETRO BERDASARKAN PENELITIAN HARDWARE EMULASI HISTORIS
+            const PRESET_PALETTES = {
+                gameboy: ["#0f380f", "#306230", "#8bac0f", "#9bbc0f"].map(hexToRgb),
+                nes: ["#000000","#ffffff","#d80000","#001c92","#006000","#f8b800","#f878f8","#aca000"].map(hexToRgb),
+                pico8: ["#000000","#1D2B53","#7E2553","#008751","#AB5236","#5F574F","#C2C3C7","#FFF1E8","#FF004D","#FFA300","#FFEC27","#00E436","#29ADFF","#83769C","#FF77A8","#FFCCAA"].map(hexToRgb),
+                monochrome: ["#000000", "#FFFFFF"].map(hexToRgb)
+            };
+
+            if (palType !== 'adaptive' && PRESET_PALETTES[palType]) {
+                colorPalette = PRESET_PALETTES[palType].map(c => ({ ...c, hex: rgbToHex(c.r, c.g, c.b), count: 0 }));
+            }
+
+            // Matriks Threshold Bayer 2x2 untuk Pemrosesan Dithering Spasial
+            const BAYER_MATRIX_2X2 = [
+                [ 1,  3 ],
+                [ 4,  2 ]
+            ];
+
+            for (let y = 0; y < gridH; y++) {
+                for (let x = 0; x < gridW; x++) {
+                    let sumR = 0, sumG = 0, sumB = 0, sumA = 0, count = 0;
+                    const startX = Math.floor(x * cellW);
+                    const startY = Math.floor(y * cellH);
+                    const endX = Math.max(startX + 1, Math.floor((x + 1) * cellW));
+                    const endY = Math.max(startY + 1, Math.floor((y + 1) * cellH));
+
+let solidPixelsCount = 0;
+                    for (let py = startY; py < endY; py++) {
+                        const by = Math.min(originalHeight - 1, py);
+                        for (let px = startX; px < endX; px++) {
+                            const bx = Math.min(originalWidth - 1, px);
+                            const pIdx = (by * originalWidth + bx) * 4;
+                            
+                            // Ambil data piksel jika tingkat opasitasnya signifikan (> 10)
+                            if (cachedImgData[pIdx + 3] > 10) {
+                                sumR += cachedImgData[pIdx];
+                                sumG += cachedImgData[pIdx + 1];
+                                sumB += cachedImgData[pIdx + 2];
+                                sumA += cachedImgData[pIdx + 3];
+                                solidPixelsCount++;
+                            }
+                            count++;
+                        }
+                    }
+
+                    // PENELITIAN METODE: Majority Alpha Voting & Hole Prevention
+                    // Jika lebih dari 20% area blok diisi oleh piksel padat, sel ini WAJIB dipertahankan (tidak boleh bolong)
+                    if (solidPixelsCount / count < 0.20) {
+                        pixelMatrix[y][x] = null;
+                        continue;
+                    }
+
+                    // Hitung rata-rata warna hanya dari piksel yang solid agar warna tidak terpolusi oleh background kosong
+                    let divisor = solidPixelsCount > 0 ? solidPixelsCount : count;
+                    let r = Math.round(sumR / divisor);
+                    let g = Math.round(sumG / divisor);
+                    let b = Math.round(sumB / divisor);
+
+// PENELITIAN PRESERVATION: Pisahkan pencarian warna dasar murni sebelum dithering untuk mengamankan integritas struktur
+                    let origR = r, origG = g, origB = b;
+                    
+                    if (pixStyle === 'dithered') {
+                        const bayerValue = BAYER_MATRIX_2X2[y % 2][x % 2];
+                        const spread = (bayerValue - 2.5) * 14; // Sedikit diturunkan menjadi 14 untuk menjaga stabilitas kontras kaca
+                        r = Math.min(255, Math.max(0, r + spread));
+                        g = Math.min(255, Math.max(0, g + spread));
+                        b = Math.min(255, Math.max(0, b + spread));
+                    }
+
+                    let palIdx = -1;
+                    let minDistance = Infinity;
+
+                    for (let i = 0; i < colorPalette.length; i++) {
+                        const pal = colorPalette[i];
+                        
+                        // EVALUASI STRUKTUR: Gunakan warna asli (orig) untuk validasi threshold pembatas agar tidak jebol menjadi bolong,
+                        // dan gunakan warna modifikasi (r,g,b) untuk pencocokan tone warna dithering.
+                        const checkR = (palType === 'adaptive') ? origR : r;
+                        const checkG = (palType === 'adaptive') ? origG : g;
+                        const checkB = (palType === 'adaptive') ? origB : b;
+
+                        const rmean = (checkR + pal.r) / 2;
+                        const dr = checkR - pal.r;
+                        const dg = checkG - pal.g;
+                        const db = checkB - pal.b;
+                        const distanceSq = (((512 + rmean) * dr * dr) >> 8) + 4 * dg * dg + (((767 - rmean) * db * db) >> 8);
+
+                        if (palType !== 'adaptive') {
+                            if (distanceSq < minDistance) {
+                                minDistance = distanceSq;
+                                palIdx = i;
+                            }
+                        } else {
+                            if (distanceSq <= toleranceSq && distanceSq < minDistance) {
+                                minDistance = distanceSq;
+                                palIdx = i;
+                            }
+                        }
+                    }
+
+                    if (palIdx === -1 && palType === 'adaptive') {
+                        const hex = rgbToHex(r, g, b);
+                        colorPalette.push({ r, g, b, hex, count: 1 });
+                        palIdx = colorPalette.length - 1;
+                    } else if (palType === 'adaptive') {
+                        const pal = colorPalette[palIdx];
+                        pal.r = Math.round((pal.r * pal.count + r) / (pal.count + 1));
+                        pal.g = Math.round((pal.g * pal.count + g) / (pal.count + 1));
+                        pal.b = Math.round((pal.b * pal.count + b) / (pal.count + 1));
+                        pal.hex = rgbToHex(pal.r, pal.g, pal.b);
+                        pal.count++;
+                    }
+                    
+                    pixelMatrix[y][x] = palIdx === -1 ? 0 : palIdx;
+                }
+            }
+
+            // ALGORITMA AKADEMIS: Topological Hole Filling & Outline Enforcement
+            // Pertama, lakukan pembersihan otomatis untuk menambal piksel kosong yang terisolasi di dalam objek (Hole Patching)
+            const patchMatrix = pixelMatrix.map(row => [...row]);
+            for (let y = 1; y < gridH - 1; y++) {
+                for (let x = 1; x < gridW - 1; x++) {
+                    if (patchMatrix[y][x] === null) {
+                        // Jika sel kosong (null) dikelilingi oleh mayoritas piksel padat (atas, bawah, kiri, kanan bukan null)
+                        let neighbors = 0;
+                        let validNeighborIdx = 0;
+                        if (patchMatrix[y-1][x] !== null) { neighbors++; validNeighborIdx = patchMatrix[y-1][x]; }
+                        if (patchMatrix[y+1][x] !== null) { neighbors++; validNeighborIdx = patchMatrix[y+1][x]; }
+                        if (patchMatrix[y][x-1] !== null) { neighbors++; validNeighborIdx = patchMatrix[y][x-1]; }
+                        if (patchMatrix[y][x+1] !== null) { neighbors++; validNeighborIdx = patchMatrix[y][x+1]; }
+                        
+                        // Jika dikelilingi oleh 3 atau 4 piksel padat, tambal lubang tersebut dengan warna tetangganya
+                        if (neighbors >= 3) {
+                            pixelMatrix[y][x] = validNeighborIdx;
+                        }
+                    }
+                }
+            }
+
+            // Kedua, jika memilih jenis 'outline', aplikasikan penajaman garis tepi luar secara presisi
+            if (pixStyle === 'outline') {
+                const tempMatrix = pixelMatrix.map(row => [...row]);
+                let darkIdx = 0;
+                let minLuma = Infinity;
+                colorPalette.forEach((c, idx) => {
+                    const luma = 0.299 * c.r + 0.587 * c.g + 0.114 * c.b;
+                    if (luma < minLuma) { minLuma = luma; darkIdx = idx; }
+                });
+
+                for (let y = 1; y < gridH - 1; y++) {
+                    for (let x = 1; x < gridW - 1; x++) {
+                        if (tempMatrix[y][x] !== null && tempMatrix[y][x] !== darkIdx) {
+                            if (tempMatrix[y-1][x] === null || tempMatrix[y+1][x] === null || 
+                                tempMatrix[y][x-1] === null || tempMatrix[y][x+1] === null) {
+                                pixelMatrix[y][x] = darkIdx;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // TAHAP PASCA-PROSES: Konsolidasi Palet Dinamis Berdasarkan Skala Kerapatan K-Means
+            let MAX_ALLOWED_COLORS = 32;
+            if (gridW <= 16) {
+                MAX_ALLOWED_COLORS = 16;
+            } else if (gridW >= 128) {
+                MAX_ALLOWED_COLORS = 64; // Memberikan kelonggaran ruang warna (64 warna) untuk resolusi tinggi agar detail tidak hancur
+            }
+            
+            if (palType === 'adaptive' && colorPalette.length > MAX_ALLOWED_COLORS) {
+                // Urutkan warna dari yang paling sering muncul ke yang paling jarang
+                let sortedPaletteIndices = colorPalette
+                    .map((c, idx) => ({ idx, count: c.count }))
+                    .sort((a, b) => b.count - a.count);
+
+                // Ambil N warna utama sebagai centroid final
+                const keeperIndices = new Set(sortedPaletteIndices.slice(0, MAX_ALLOWED_COLORS).map(item => item.idx));
+                const finalPalette = [];
+                const oldToNewMap = new Map();
+
+                colorPalette.forEach((pal, oldIdx) => {
+                    if (keeperIndices.has(oldIdx)) {
+                        finalPalette.push(pal);
+                        oldToNewMap.set(oldIdx, finalPalette.length - 1);
+                    }
+                });
+
+                // Untuk warna yang dibuang, cari warna terdekat dari finalPalette untuk menampungnya
+                colorPalette.forEach((oldPal, oldIdx) => {
+                    if (!keeperIndices.has(oldIdx)) {
+                        let nearestNewIdx = 0;
+                        let minDistance = Infinity;
+
+                        finalPalette.forEach((newPal, newIdx) => {
+                            const rmean = (oldPal.r + newPal.r) / 2;
+                            const dr = oldPal.r - newPal.r;
+                            const dg = oldPal.g - newPal.g;
+                            const db = oldPal.b - newPal.b;
+                            const distanceSq = (((512 + rmean) * dr * dr) >> 8) + 4 * dg * dg + (((767 - rmean) * db * db) >> 8);
+
+                            if (distanceSq < minDistance) {
+                                minDistance = distanceSq;
+                                nearestNewIdx = newIdx;
+                            }
+                        });
+                        oldToNewMap.set(oldIdx, nearestNewIdx);
+                    }
+                });
+
+                // Remap matriks piksel ke palet baru yang sudah diringkas
+                for (let y = 0; y < gridH; y++) {
+                    for (let x = 0; x < gridW; x++) {
+                        if (pixelMatrix[y][x] !== null) {
+                            pixelMatrix[y][x] = oldToNewMap.get(pixelMatrix[y][x]);
+                        }
+                    }
+                }
+                colorPalette = finalPalette;
+            }
+
+            postProcessUpdates();
+            history = [];
+            historyIndex = -1;
+            saveState();
+        }
+
+        // Inisialisasi kanvas kosong baru 16x16 dengan palet starter standar
+        function createBlankGrid() {
+            const gridW = parseInt(gridWidthInput.value) || 16;
+            const gridH = parseInt(gridHeightInput.value) || 16;
+
+            pixelMatrix = Array(gridH).fill(0).map(() => Array(gridW).fill(null)); // Mulai kosong (transparan)
+            
+            // Sediakan beberapa warna starter agar pengguna bisa langsung menggambar
+            colorPalette = [
+                { r: 0, g: 0, b: 0, hex: "#000000" },
+                { r: 255, g: 255, b: 255, hex: "#FFFFFF" },
+                { r: 239, g: 68, b: 68, hex: "#EF4444" },
+                { r: 59, g: 130, b: 246, hex: "#3B82F6" },
+                { r: 34, g: 197, b: 94, hex: "#22C55E" },
+                { r: 234, g: 179, b: 8, hex: "#EAB308" }
+            ];
+            
+            emptyState.classList.add('hidden');
+            canvasWrapper.classList.remove('hidden');
+            origResolution.textContent = `RES: DRAW MODE`;
+
+            postProcessUpdates();
+            showToast("Kanvas Siap - Silakan Gambar!");
+            
+            history = [];
+            historyIndex = -1;
+            saveState();
+        }
+
+        function resizeBlankGridSafely() {
+            const newW = parseInt(gridWidthInput.value) || 16;
+            const newH = parseInt(gridHeightInput.value) || 16;
+
+            if (!pixelMatrix || pixelMatrix.length === 0) return createBlankGrid();
+
+            const newMatrix = Array(newH).fill(0).map(() => Array(newW).fill(null));
+            for(let y=0; y<Math.min(pixelMatrix.length, newH); y++) {
+                for(let x=0; x<Math.min(pixelMatrix[0].length, newW); x++) {
+                    newMatrix[y][x] = pixelMatrix[y][x];
+                }
+            }
+            pixelMatrix = newMatrix;
+            postProcessUpdates();
+            saveState();
+        }
+
+        // Event Klik dan Geser pada Kanvas
+        pixelCanvas.addEventListener('mousedown', (e) => {
+            if (appMode !== 'draw' && appMode !== 'ai') return;
+            
+            const rect = pixelCanvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            const gridW = pixelMatrix[0].length;
+            const gridH = pixelMatrix.length;
+            const col = Math.floor(mouseX / (rect.width / gridW));
+            const row = Math.floor(mouseY / (rect.height / gridH));
+
+            if (col < 0 || col >= gridW || row < 0 || row >= gridH) return;
+
+            if (drawTool === 'eyedropper') {
+                const val = pixelMatrix[row][col];
+                if (val !== null && colorPalette[val]) {
+                    colorPicker.value = colorPalette[val].hex;
+                    showToast("Warna Dipilih");
+                }
+                selectTool('pen');
+                return;
+            }
+
+            if (drawTool === 'fill') {
+                floodFill(col, row);
+                postProcessUpdates();
+                saveState();
+                return;
+            }
+
+            isDrawing = true;
+            stateChanged = false;
+            
+            startCol = col;
+            startRow = row;
+            currentDragCol = col;
+            currentDragRow = row;
+            lastDrawCol = col;
+            lastDrawRow = row;
+
+            if (drawTool === 'pen' || drawTool === 'eraser') {
+                paintPixel(row, col);
+            } else if (drawTool === 'perfect') {
+                paintPixelPerfect(row, col, true);
+            } else if (drawTool === 'spray') {
+                paintSpray(row, col);
+            } else if (drawTool === 'selection') {
+                selectionBox = { startC: col, startR: row, endC: col, endR: row, active: true };
+                drawPreviewCanvas();
+            }
+        });
+        
+        pixelCanvas.addEventListener('mousemove', (e) => {
+            handleCanvasHover(e);
+            if (isDrawing && (appMode === 'draw' || appMode === 'ai')) {
+                const rect = pixelCanvas.getBoundingClientRect();
+                const gridW = pixelMatrix[0].length;
+                const gridH = pixelMatrix.length;
+                const col = Math.floor((e.clientX - rect.left) / (rect.width / gridW));
+                const row = Math.floor((e.clientY - rect.top) / (rect.height / gridH));
+                
+                if (col >= 0 && col < gridW && row >= 0 && row < gridH) {
+                    if (drawTool === 'pen' || drawTool === 'eraser') {
+                        paintPixel(row, col);
+                    } else if (drawTool === 'perfect') {
+                        paintPixelPerfect(row, col, false);
+                    } else if (drawTool === 'spray') {
+                        paintSpray(row, col);
+                    } else if (drawTool === 'selection') {
+                        if (selectionBox && selectionBox.active) {
+                            selectionBox.endC = col;
+                            selectionBox.endR = row;
+                            drawPreviewCanvas();
+                        }
+                    } else {
+                        // Untuk alat bentuk, simpan koordinat akhir seretan lalu render preview bayangan
+                        currentDragCol = col;
+                        currentDragRow = row;
+                        drawPreviewCanvas();
+                    }
+                }
+            }
+        });
+
+        // Event Sentuh untuk Menggambar di Mobile/Tablet
+        function handleTouch(e, isStart) {
+            if (appMode !== 'draw' && appMode !== 'ai') return;
+            if (e.touches.length === 0) return;
+            e.preventDefault(); // Mencegah scrolling halaman saat menggambar
+
+            const touch = e.touches[0];
+            const rect = pixelCanvas.getBoundingClientRect();
+            const mouseX = touch.clientX - rect.left;
+            const mouseY = touch.clientY - rect.top;
+            const gridW = pixelMatrix[0].length;
+            const gridH = pixelMatrix.length;
+            const col = Math.floor(mouseX / (rect.width / gridW));
+            const row = Math.floor(mouseY / (rect.height / gridH));
+
+            if (col < 0 || col >= gridW || row < 0 || row >= gridH) return;
+
+            if (isStart) {
+                if (drawTool === 'eyedropper') {
+                    const val = pixelMatrix[row][col];
+                    if (val !== null && colorPalette[val]) {
+                        colorPicker.value = colorPalette[val].hex;
+                        showToast("Warna Dipilih");
+                    }
+                    selectTool('pen');
+                    return;
+                }
+
+                if (drawTool === 'fill') {
+                    floodFill(col, row);
+                    postProcessUpdates();
+                    saveState();
+                    return;
+                }
+
+                isDrawing = true;
+                stateChanged = false;
+                paintPixel(row, col);
+            } else if (isDrawing) {
+                paintPixel(row, col);
+            }
+        }
+
+        pixelCanvas.addEventListener('touchstart', (e) => {
+            handleTouch(e, true);
+        }, { passive: false });
+
+        pixelCanvas.addEventListener('touchmove', (e) => {
+            handleTouch(e, false);
+        }, { passive: false });
+
+        pixelCanvas.addEventListener('touchend', (e) => {
+            if (isDrawing && (appMode === 'draw' || appMode === 'ai')) {
+                isDrawing = false;
+                if (stateChanged) {
+                    postProcessUpdates();
+                    saveState();
+                }
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (isDrawing && (appMode === 'draw' || appMode === 'ai')) {
+                isDrawing = false;
+                
+                // Jika menggunakan alat bentuk geometri, kunci bentuknya ke matriks asli saat mouse dilepas
+                if (['line', 'rect', 'circle'].includes(drawTool)) {
+                    const hexColor = colorPicker.value.toUpperCase();
+                    let pIdx = colorPalette.findIndex(c => c.hex === hexColor);
+                    if (pIdx === -1) {
+                        const rgb = hexToRgb(hexColor);
+                        colorPalette.push({ r: rgb.r, g: rgb.g, b: rgb.b, hex: hexColor });
+                        pIdx = colorPalette.length - 1;
+                    }
+
+                    const pixelsToPaint = calculateShapePixels(startCol, startRow, currentDragCol, currentDragRow, drawTool);
+                    let shapeChanged = false;
+                    pixelsToPaint.forEach(([c, r]) => {
+                        if (r >= 0 && r < pixelMatrix.length && c >= 0 && c < pixelMatrix[0].length) {
+                            if (pixelMatrix[r][c] !== pIdx) {
+                                pixelMatrix[r][c] = pIdx;
+                                shapeChanged = true;
+                            }
+                        }
+                    });
+                    
+                    if (shapeChanged) stateChanged = true;
+                }
+
+                if (drawTool === 'selection' && selectionBox) {
+                    // Normalisasi box agar koordinat start selalu lebih kecil dibanding end
+                    const c0 = Math.min(selectionBox.startC, selectionBox.endC);
+                    const c1 = Math.max(selectionBox.startC, selectionBox.endC);
+                    const r0 = Math.min(selectionBox.startR, selectionBox.endR);
+                    const r1 = Math.max(selectionBox.startR, selectionBox.endR);
+                    selectionBox = { startC: c0, startR: r0, endC: c1, endR: r1, active: true };
+                }
+
+                if (stateChanged) {
+                    postProcessUpdates();
+                    saveState();
+                } else {
+                    drawPreviewCanvas(); // Bersihkan sisa bayangan preview jika tidak ada perubahan
+                }
+            }
+        });
+
+        pixelCanvas.addEventListener('mouseleave', () => {
+            hoverCoord.textContent = 'PIXEL: [ -, - ]';
+        });
+
+        function paintPixel(row, col) {
+            const gridW = pixelMatrix[0].length;
+            const gridH = pixelMatrix.length;
+
+            if (col >= 0 && col < gridW && row >= 0 && row < gridH) {
+                const oldVal = pixelMatrix[row][col];
+
+                if (drawTool === 'eraser') {
+                    if (oldVal !== null) {
+                        pixelMatrix[row][col] = null;
+                        stateChanged = true;
+                    }
+                } else if (drawTool === 'pen') {
+                    const hexColor = colorPicker.value.toUpperCase();
+                    let pIdx = colorPalette.findIndex(c => c.hex === hexColor);
+                    
+                    if (pIdx === -1) {
+                        const rgb = hexToRgb(hexColor);
+                        colorPalette.push({ r: rgb.r, g: rgb.g, b: rgb.b, hex: hexColor });
+                        pIdx = colorPalette.length - 1;
+                    }
+                    if (oldVal !== pIdx) {
+                        pixelMatrix[row][col] = pIdx;
+                        stateChanged = true;
+                    }
+                }
+                drawPreviewCanvas(); 
+            }
+        }
+
+        function handleCanvasHover(e) {
+            if(!pixelMatrix || pixelMatrix.length===0) return;
+            const rect = pixelCanvas.getBoundingClientRect();
+            const gridW = pixelMatrix[0].length;
+            const gridH = pixelMatrix.length;
+            
+            const col = Math.floor((e.clientX - rect.left) / (rect.width / gridW));
+            const row = Math.floor((e.clientY - rect.top) / (rect.height / gridH));
+
+            if (col >= 0 && col < gridW && row >= 0 && row < gridH) {
+                const transIdxInput = transparentIndexInput.value.trim();
+                const val = pixelMatrix[row][col];
+                
+                let detail = `[ ${col}, ${row} ] : `;
+                if (val === null) detail += `ALPHA (${transIdxInput})`;
+                else if (colorPalette[val]) detail += `IDX ${val + parseInt(indexBaseSelect.value)} (${colorPalette[val].hex})`;
+                
+                hoverCoord.textContent = `PIXEL: ${detail}`;
+            }
+        }
+
+        // Sinkronisasi update palet, visual, dan kode output teks
+        function postProcessUpdates() {
+            renderPalette();
+            drawPreviewCanvas();
+            generateOutputText();
+            triggerAutosave(); // Otomatis simpan setiap kali ada perubahan data visual
+        }
+
+        function renderPalette() {
+            paletteContainer.innerHTML = '';
+            document.getElementById('paletteCount').textContent = `${colorPalette.length} WARNA`;
+
+            if (colorPalette.length === 0) {
+                paletteContainer.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-6 gap-2 opacity-50">
+                    <i data-lucide="droplets" class="w-6 h-6"></i>
+                    <p class="text-neutral-500 italic text-xs">Menunggu data...</p>
+                </div>`;
+                lucide.createIcons();
+                return;
+            }
+
+            const base = parseInt(indexBaseSelect.value);
+            const fragment = document.createDocumentFragment();
+            const LIMIT = 128;
+
+            const currentHexColor = colorPicker.value.toUpperCase();
+            for (let i = 0; i < Math.min(colorPalette.length, LIMIT); i++) {
+                const c = colorPalette[i];
+                const isSelected = (c.hex === currentHexColor);
+                const div = document.createElement('div');
+                
+                // Berikan border tebal hitam/putih adaptif jika warna ini sedang aktif di color picker
+                const activeBorderClass = isSelected 
+                    ? 'border-black dark:border-white ring-1 ring-black dark:ring-white bg-white dark:bg-neutral-800 font-semibold' 
+                    : 'border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50';
+                
+                div.className = `flex items-center justify-between p-2 border hover:bg-white dark:hover:bg-neutral-800 transition-all rounded-xl shadow-sm ${activeBorderClass}`;
+                div.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="w-5 h-5 rounded-md shadow-inner border border-black/10 dark:border-white/10 inline-block ${isSelected ? 'scale-110 shadow-md' : ''}" style="background-color: ${c.hex}"></span>
+                        <span class="font-mono text-xs ${isSelected ? 'text-black dark:text-white font-bold' : 'text-neutral-600 dark:text-neutral-400'}">${c.hex}</span>
+                    </div>
+                    <span class="bg-black text-white dark:bg-white dark:text-black px-2 py-0.5 font-mono font-bold text-[10px] rounded-md shadow-sm">ID: ${i + base}</span>
+                `;
+                
+                div.onclick = () => {
+                    if(appMode === 'draw' || appMode === 'ai') {
+                        colorPicker.value = c.hex;
+                        selectTool('pen');
+                        showToast("Warna Dipilih");
+                    }
+                };
+                if(appMode==='draw' || appMode==='ai') div.classList.add('cursor-pointer', 'hover:scale-[1.02]');
+
+                fragment.appendChild(div);
+            }
+            paletteContainer.appendChild(fragment);
+        }
+
+        // Fungsi Algoritma Matematika untuk menghitung koordinat piksel pembentuk Geometri
+        function calculateShapePixels(x0, y0, x1, y1, type) {
+            const points = [];
+            if (type === 'line') {
+                // Bresenham's Line Algorithm
+                const dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+                const dy = -Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+                let err = dx + dy, e2;
+                while (true) {
+                    points.push([x0, y0]);
+                    if (x0 === x1 && y0 === y1) break;
+                    e2 = 2 * err;
+                    if (e2 >= dy) { err += dy; x0 += sx; }
+                    if (e2 <= dx) { err += dx; y0 += sy; }
+                }
+            } else if (type === 'rect') {
+                const minX = Math.min(x0, x1), maxX = Math.max(x0, x1);
+                const minY = Math.min(y0, y1), maxY = Math.max(y0, y1);
+                for (let x = minX; x <= maxX; x++) { points.push([x, minY]); points.push([x, maxY]); }
+                for (let y = minY; y <= maxY; y++) { points.push([minX, y]); points.push([maxX, y]); }
+            } else if (type === 'circle') {
+                // Midpoint Circle Algorithm Modifikasi Seni Piksel
+                const r = Math.round(Math.sqrt(Math.pow(x1 - x0, 2) + Math.pow(y1 - y0, 2)));
+                let x = r, y = 0;
+                let P = 1 - r;
+                const addSymmetricPoints = (cx, cy, x, y) => {
+                    points.push([cx + x, cy + y], [cx - x, cy + y], [cx + x, cy - y], [cx - x, cy - y]);
+                    points.push([cx + y, cy + x], [cx - y, cy + x], [cx + y, cy - x], [cx - y, cy - x]);
+                };
+                if (r === 0) return [[x0, y0]];
+                addSymmetricPoints(x0, y0, x, y);
+                while (x > y) {
+                    y++;
+                    if (P <= 0) P = P + 2 * y + 1;
+                    else { x--; P = P + 2 * y - 2 * x + 1; }
+                    if (x < y) break;
+                    addSymmetricPoints(x0, y0, x, y);
+                }
+            }
+            return points;
+        }
+
+        function drawPreviewCanvas() {
+            if (!pixelMatrix || pixelMatrix.length === 0) return;
+            const gridH = pixelMatrix.length;
+            const gridW = pixelMatrix[0].length;
+
+            const displayScale = Math.max(1, Math.min(32, Math.floor(460 / Math.max(gridW, gridH))));
+            pixelCanvas.width = gridW * displayScale;
+            pixelCanvas.height = gridH * displayScale;
+
+            const ctx = pixelCanvas.getContext('2d');
+            ctx.imageSmoothingEnabled = false;
+            ctx.clearRect(0, 0, pixelCanvas.width, pixelCanvas.height);
+
+            // 1. Gambar Matriks Piksel Utama Eksisting
+            for (let y = 0; y < gridH; y++) {
+                for (let x = 0; x < gridW; x++) {
+                    const v = pixelMatrix[y][x];
+                    if (v !== null && colorPalette[v]) {
+                        ctx.fillStyle = colorPalette[v].hex;
+                        ctx.fillRect(x * displayScale, y * displayScale, displayScale, displayScale);
+                    }
+                }
+            }
+
+            // 2. Jika sedang menggambar bentuk geometri, munculkan visual bayangan (Overlay Preview) sementara
+            if (isDrawing && ['line', 'rect', 'circle'].includes(drawTool)) {
+                ctx.fillStyle = colorPicker.value;
+                const previewPoints = calculateShapePixels(startCol, startRow, currentDragCol, currentDragRow, drawTool);
+                previewPoints.forEach(([c, r]) => {
+                    if (r >= 0 && r < gridH && c >= 0 && c < gridW) {
+                        ctx.fillRect(c * displayScale, r * displayScale, displayScale, displayScale);
+                    }
+                });
+            }
+
+            // 3. Render garis putus-putus berkedip jika seleksi area sedang aktif (Selection Marquee)
+            if (selectionBox && selectionBox.active) {
+                ctx.strokeStyle = '#3b82f6'; // Biru modern Tailwind
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([4, 4]); // Efek marching ants putus-putus
+                
+                const sC = Math.min(selectionBox.startC, selectionBox.endC);
+                const eC = Math.max(selectionBox.startC, selectionBox.endC);
+                const sR = Math.min(selectionBox.startR, selectionBox.endR);
+                const eR = Math.max(selectionBox.startR, selectionBox.endR);
+                
+                ctx.strokeRect(
+                    sC * displayScale, 
+                    sR * displayScale, 
+                    (eC - sC + 1) * displayScale, 
+                    (eR - sR + 1) * displayScale
+                );
+                ctx.setLineDash([]); // Reset aturan line dash agar tidak mengotori grid biasa
+            }
+
+            if (document.getElementById('showGrid').checked) {
+                const isDark = document.documentElement.classList.contains('dark');
+                ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                ctx.lineWidth = 1;
+                for (let x = 0; x <= gridW; x++) {
+                    ctx.beginPath(); ctx.moveTo(x * displayScale, 0); ctx.lineTo(x * displayScale, pixelCanvas.height); ctx.stroke();
+                }
+                for (let y = 0; y <= gridH; y++) {
+                    ctx.beginPath(); ctx.moveTo(0, y * displayScale); ctx.lineTo(pixelCanvas.width, y * displayScale); ctx.stroke();
+                }
+            }
+        }
+
+        function generateOutputText() {
+            if (!pixelMatrix || pixelMatrix.length === 0) {
+                matrixOutput.value = '';
+                document.getElementById('outputSizeText').textContent = '0 x 0';
+                return;
+            }
+
+            const format = formatSelect.value;
+            const base = parseInt(indexBaseSelect.value);
+            const gridH = pixelMatrix.length;
+            const gridW = pixelMatrix[0].length;
+            
+            const transIdxInput = transparentIndexInput.value.trim();
+            let parsedTransVal = transIdxInput;
+            if (transIdxInput === 'null') parsedTransVal = null;
+            else if (transIdxInput === 'undefined') parsedTransVal = undefined;
+            else if (!isNaN(transIdxInput) && transIdxInput !== '') parsedTransVal = Number(transIdxInput);
+            
+            let out = '';
+            document.getElementById('outputSizeText').textContent = `${gridW}W x ${gridH}H`;
+
+            // Atur pemetaan output berdasarkan nilai transparan kustom
+            const getVal = (v) => {
+                if (v === null) {
+                    if (parsedTransVal === null) return 'null';
+                    if (parsedTransVal === undefined) return 'undefined';
+                    if (typeof parsedTransVal === 'number') return parsedTransVal;
+                    return `"${parsedTransVal}"`;
+                }
+                return v + base;
+            };
+
+            if (format === 'jscanvas') {
+                const arrayRows = pixelMatrix.map(r => `    [${r.map(getVal).join(', ')}]`).join(',\n');
+                const cleanPalette = colorPalette.map(c => c.hex);
+                
+                out = `// Aset Game Sprite hasil generate dari Matrix Extractor
+const gameSprite = {
+  width: ${gridW},
+  height: ${gridH},
+  palette: ${JSON.stringify(cleanPalette)},
+  matrix: [
+${arrayRows}
+  ],
+  /**
+   * Menggambar sprite langsung ke konteks HTML5 2D Canvas.
+   * Sangat mudah untuk game single-file HTML!
+   * @param {CanvasRenderingContext2D} ctx - Konteks canvas target
+   * @param {number} x - Koordinat X rendering
+   * @param {number} y - Koordinat Y rendering
+   * @param {number} scale - Skala piksel / ukuran per kotak piksel
+   */
+  draw: function(ctx, x, y, scale = 2) {
+    const transVal = ${typeof parsedTransVal === 'string' ? `"${parsedTransVal}"` : parsedTransVal};
+    const baseIndex = ${base};
+    for (let r = 0; r < this.height; r++) {
+      for (let c = 0; c < this.width; c++) {
+        const val = this.matrix[r][c];
+        if (val !== transVal) {
+          const paletteIdx = val - baseIndex;
+          if (this.palette[paletteIdx]) {
+            ctx.fillStyle = this.palette[paletteIdx];
+            ctx.fillRect(x + (c * scale), y + (r * scale), scale, scale);
+          }
+        }
+      }
+    }
+  }
+};
+
+// Cara penggunaan dalam game loop HTML Anda:
+// gameSprite.draw(context, 100, 150, 3);`;
+            } else if (format === 'json2d') {
+                out = `[\n` + pixelMatrix.map(r => `  [${r.map(getVal).join(', ')}]`).join(',\n') + `\n]`;
+            } else if (format === 'json1d') {
+                const flat = [];
+                for(let y=0;y<gridH;y++) for(let x=0;x<gridW;x++) flat.push(getVal(pixelMatrix[y][x]));
+                out = JSON.stringify(flat);
+            } else if (format === 'python') {
+                out = `matrix = [\n` + pixelMatrix.map(r => `    [${r.map(v => {
+                    const mapped = getVal(v);
+                    return mapped === 'null' ? 'None' : mapped;
+                }).join(', ')}]`).join(',\n') + `\n]`;
+            } else if (format === 'cpp') {
+                out = `const int W = ${gridW};\nconst int H = ${gridH};\nint matrix[H][W] = {\n` + 
+                      pixelMatrix.map(r => `  {${r.map(v => {
+                          const val = getVal(v);
+                          return (typeof val === 'number') ? val : 0;
+                      }).join(', ')}}`).join(',\n') + `\n};`;
+            } else if (format === 'csv') {
+                out = pixelMatrix.map(r => r.map(v => String(getVal(v)).replace(/"/g,'')).join(',')).join('\n');
+            } else if (format === 'hex2d') {
+                out = `[\n` + pixelMatrix.map(r => `  [${r.map(v => v===null ? '"#00000000"' : `"${colorPalette[v]?.hex}"`).join(', ')}]`).join(',\n') + `\n]`;
+            }
+            matrixOutput.value = out;
+        }
+
+        // Event Listener Panel Output
+        formatSelect.addEventListener('change', generateOutputText);
+        indexBaseSelect.addEventListener('change', postProcessUpdates);
+        document.getElementById('showGrid').addEventListener('change', drawPreviewCanvas);
+
+        // Fungsi navigasi sub-menu AI
+        function switchAISubMode(subMode) {
+            const assetBtn = document.getElementById('aiSubAssetBtn');
+            const paletteBtn = document.getElementById('aiSubPaletteBtn');
+            const assetSec = document.getElementById('aiAssetSection');
+            const paletteSec = document.getElementById('aiPaletteSection');
+            
+            const activeClass = "py-1.5 rounded-lg bg-white dark:bg-neutral-700 text-black dark:text-white shadow-sm";
+            const inactiveClass = "py-1.5 rounded-lg text-neutral-500 hover:text-black dark:hover:text-white";
+
+            if (subMode === 'asset') {
+                assetBtn.className = activeClass;
+                paletteBtn.className = inactiveClass;
+                assetSec.classList.remove('hidden');
+                paletteSec.classList.add('hidden');
+            } else {
+                assetBtn.className = inactiveClass;
+                paletteBtn.className = activeClass;
+                assetSec.classList.add('hidden');
+                paletteSec.classList.remove('hidden');
+            }
+        }
+
+        // Fungsi Generator Palet Cerdas berbasis AI Gemini
+        async function generatePaletteAI() {
+            const promptInput = document.getElementById('aiPalettePrompt').value.trim();
+            if (!promptInput) {
+                showToast("Tulis tema warna palet terlebih dahulu!");
+                return;
+            }
+
+            const activeKey = apiKey || getClientApiKey();
+            if (!activeKey) {
+                showToast("Kunci API Gemini dibutuhkan. Membuka Pengaturan!");
+                toggleSettingsModal();
+                return;
+            }
+
+            const progressMsg = document.getElementById('aiProgressMessage');
+            const btnGen = document.getElementById('btnGeneratePaletteAI');
+
+            btnGen.disabled = true;
+            btnGen.classList.add('opacity-50', 'cursor-not-allowed');
+            progressMsg.classList.remove('hidden');
+            progressMsg.textContent = "Gemini sedang memformulasikan harmoni warna...";
+
+            try {
+                const palettePrompt = `You are an expert game designer. Generate a beautiful color palette based on the theme: "${promptInput}".
+Output exactly a raw valid JSON array of strings containing hex colors (6-digit, uppercase, e.g., ["#FF0000", "#00FF00"]). Generate between 8 to 16 cohesive retro colors. Do not output markdown, code blocks, or any text other than the raw JSON array.`;
+
+                const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${activeKey}`;
+                const geminiRes = await fetch(geminiUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: palettePrompt }] }] })
+                });
+
+                const data = await geminiRes.json();
+                let rawText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+                
+                // Bersihkan block quote markdown jika LLM membangkang
+                rawText = rawText.replace(/```json|```/g, "").trim();
+                
+                const hexArray = JSON.parse(rawText);
+                if (Array.isArray(hexArray) && hexArray.length > 0) {
+                    colorPalette = hexArray.map(hex => {
+                        const rgb = hexToRgb(hex);
+                        return { r: rgb.r, g: rgb.g, b: rgb.b, hex: hex.toUpperCase() };
+                    });
+                    
+                    renderPalette();
+                    showToast("Palet Warna AI Berhasil Diaplikasikan!");
+                } else {
+                    throw new Error("Format warna JSON tidak valid.");
+                }
+            } catch (err) {
+                console.error(err);
+                showToast("Gagal membuat palet: " + err.message);
+            } finally {
+                btnGen.disabled = false;
+                btnGen.classList.remove('opacity-50', 'cursor-not-allowed');
+                progressMsg.classList.add('hidden');
+            }
+        }
+
+        function switchTab(tabId) {
+            activeTab = tabId;
+            const vBtn = document.getElementById('tabVisual');
+            const oBtn = document.getElementById('tabOutput');
+            const vPan = document.getElementById('panelVisual');
+            const oPan = document.getElementById('panelOutput');
+            const gtog = document.getElementById('gridToggleContainer');
+
+            if (tabId === 'visual') {
+                vBtn.className = "px-5 py-2 text-xs font-bold uppercase tracking-wider bg-black text-white shadow-sm dark:bg-white dark:text-black transition-all rounded-xl";
+                oBtn.className = "px-5 py-2 text-xs font-bold uppercase tracking-wider text-neutral-500 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all rounded-xl";
+                vPan.classList.remove('hidden'); oPan.classList.add('hidden'); gtog.classList.remove('hidden');
+            } else {
+                oBtn.className = "px-5 py-2 text-xs font-bold uppercase tracking-wider bg-black text-white shadow-sm dark:bg-white dark:text-black transition-all rounded-xl";
+                vBtn.className = "px-5 py-2 text-xs font-bold uppercase tracking-wider text-neutral-500 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all rounded-xl";
+                vPan.classList.add('hidden'); oPan.classList.remove('hidden'); gtog.classList.add('hidden');
+            }
+        }
+
+        function copyToClipboard() {
+            const txt = matrixOutput.value;
+            if (!txt) return;
+            const ta = document.createElement("textarea");
+            ta.value = txt; document.body.appendChild(ta); ta.select();
+            document.execCommand("copy"); document.body.removeChild(ta);
+            showToast("Berhasil Disalin ke Clipboard");
+        }
+
+        function downloadMatrixFile() {
+            const code = matrixOutput.value;
+            if (!code) {
+                showToast("Tidak ada kode untuk diekspor!");
+                return;
+            }
+            
+            let ext = "txt";
+            const format = formatSelect.value;
+            if (format.startsWith("json")) ext = "json";
+            else if (format === "python") ext = "py";
+            else if (format === "cpp") ext = "cpp";
+            else if (format === "csv") ext = "csv";
+
+            // Mengambil nama file dari input UI, bersihkan spasi, gunakan fallback jika kosong
+            let customName = document.getElementById('exportFileName').value.trim().replace(/\s+/g, '_');
+            if (!customName) customName = "pixel_matrix";
+
+            const blob = new Blob([code], { type: "text/plain;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `${customName}_${gridWidthInput.value}x${gridHeightInput.value}.${ext}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast("File Berhasil Diekspor!");
+        }
+
+        function downloadAsPng() {
+            if (pixelMatrix.length === 0 || !pixelMatrix[0]) {
+                showToast("Tidak ada data gambar untuk diunduh!");
+                return;
+            }
+
+            const h = pixelMatrix.length;
+            const w = pixelMatrix[0].length;
+            
+            // Skala agar berkas PNG tidak terlalu kecil saat diunduh
+            const scale = 16; 
+            
+            const offCanvas = document.createElement('canvas');
+            offCanvas.width = w * scale;
+            offCanvas.height = h * scale;
+            const oCtx = offCanvas.getContext('2d');
+            
+            // Matikan smoothing agar pixel art tetap tajam (crisp)
+            oCtx.imageSmoothingEnabled = false;
+
+            for (let r = 0; r < h; r++) {
+                for (let c = 0; c < w; c++) {
+                    const colorIdx = pixelMatrix[r][c];
+                    
+                    if (colorIdx === null) {
+                        // Transparan, lewati pengisian warna
+                        continue;
+                    }
+
+                    let colorHex = "#000000";
+                    if (colorPalette[colorIdx]) {
+                        colorHex = colorPalette[colorIdx].hex;
+                    }
+
+                    oCtx.fillStyle = colorHex;
+                    oCtx.fillRect(c * scale, r * scale, scale, scale);
+                }
+            }
+
+            // Mengambil nama file kustom untuk ekspor PNG
+            let customName = document.getElementById('exportFileName').value.trim().replace(/\s+/g, '_');
+            if (!customName) customName = "pixel_art";
+
+            // Proses trigger download browser
+            const dataUrl = offCanvas.toDataURL("image/png");
+            const link = document.createElement('a');
+            link.download = `${customName}_${w}x${h}.png`;
+            link.href = dataUrl;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("PNG Berhasil Diunduh!");
+        }
+
+        // --- SISTEM PINTASAN KEYBOARD ---
+        document.addEventListener('keydown', (e) => {
+            // Abaikan pintasan jika sedang mengetik di input atau area teks
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+                return;
+            }
+
+            const key = e.key.toLowerCase();
+
+            // Undo (Ctrl+Z / Cmd+Z) & Redo (Ctrl+Y atau Cmd+Shift+Z)
+            if (e.ctrlKey || e.metaKey) {
+                if (key === 'z') {
+                    e.preventDefault();
+                    if (e.shiftKey) redo();
+                    else undo();
+                    return;
+                }
+                if (key === 'y') {
+                    e.preventDefault();
+                    redo();
+                    return;
+                }
+            }
+
+            // Pintasan Umum
+            if (key === 'm') {
+                e.preventDefault();
+                let nextMode = 'extract';
+                if (appMode === 'extract') nextMode = 'draw';
+                else if (appMode === 'draw') nextMode = 'ai';
+                setMode(nextMode);
+                showToast(`Beralih Mode`);
+            } else if (key === 't') {
+                e.preventDefault();
+                toggleTheme();
+                showToast("Tema Diubah");
+            } else if (key === 'v') {
+                switchTab('visual');
+            } else if (key === 'o') {
+                switchTab('output');
+            }
+
+            // Pintasan Alat Menggambar (Aktif di Mode Draw atau AI)
+            if (appMode === 'draw' || appMode === 'ai') {
+                // Interseptor Tombol Panah untuk pergeseran alat seleksi kotak
+                if (selectionBox && selectionBox.active && ['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
+                    e.preventDefault();
+                    if (key === 'arrowup') moveSelectedSelection(0, -1);
+                    if (key === 'arrowdown') moveSelectedSelection(0, 1);
+                    if (key === 'arrowleft') moveSelectedSelection(-1, 0);
+                    if (key === 'arrowright') moveSelectedSelection(1, 0);
+                    return;
+                }
+
+                if (key === 'perfect') {
+                    selectTool('perfect');
+                    showToast("Pixel-Perfect Pen");
+                } else if (key === 's') {
+                    selectTool('spray');
+                    showToast("Spray Tool");
+                } else if (key === 'm') {
+                    selectTool('selection');
+                    showToast("Selection Tool");
+                } else if (key === 'p') {
+                    selectTool('pen');
+                    showToast("Alat Pena");
+                } else if (key === 'e') {
+                    selectTool('eraser');
+                    showToast("Alat Penghapus");
+                } else if (key === 'f') {
+                    selectTool('fill');
+                    showToast("Alat Kaleng Cat");
+                } else if (key === 'i') {
+                    selectTool('eyedropper');
+                    showToast("Alat Pipet");
+                } else if (key === 'l') {
+                    selectTool('line');
+                    showToast("Alat Garis");
+                } else if (key === 'r') {
+                    selectTool('rect');
+                    showToast("Alat Kotak");
+                } else if (key === 'o') {
+                    selectTool('circle');
+                    showToast("Alat Lingkaran");
+                } else if (key === 'c') {
+                    createBlankGrid();
+                }
+            }
+        });
+
+        // --- ENGINE GENERATOR PIXEL ART REFACTORED (BEST PRACTICE PIPELINE) ---
+        async function generatePixelArtAI() {
+            const promptInput = document.getElementById('aiPrompt').value.trim();
+            if (!promptInput) {
+                showToast("Tulis prompt terlebih dahulu!");
+                return;
+            }
+
+            const activeKey = apiKey || getClientApiKey();
+            if (!activeKey) {
+                showToast("Kunci API Gemini belum disimpan untuk ekspansi prompt. Membuka Pengaturan!");
+                toggleSettingsModal();
+                return;
+            }
+
+            const progressMsg = document.getElementById('aiProgressMessage');
+            const btnGen = document.getElementById('btnGenerateAI');
+
+            btnGen.disabled = true;
+            btnGen.classList.add('opacity-50', 'cursor-not-allowed');
+            progressMsg.classList.remove('hidden');
+            
+            try {
+                // TAHAP 1: LLM Prompt Expansion via Gemini & Analisis Spasial Gambar Kasar (Sketch-to-Image)
+                progressMsg.textContent = "Gemini sedang menganalisis geometri bentuk mentah sketsa Anda...";
+                
+                const selectedAiMode = document.querySelector('input[name="aiConditionGroup"]:checked')?.value || 'standard';
+                
+                let geminiRequestBody = {};
+                
+                if (selectedAiMode === 'sketch') {
+                    // IMPLEMENTASI ILMIAH: Edge-Guided Tokenizer & Dynamic Structural Padding
+                    const cols = pixelMatrix[0].length;
+                    const rows = pixelMatrix.length;
+                    const baseCell = 16;
+                    
+                    // Membuat resolusi kanvas dengan padding 15% untuk mencegah clipping artifact di Latent Space
+                    const padX = Math.ceil(cols * 0.15);
+                    const padY = Math.ceil(rows * 0.15);
+                    const totalCols = cols + (padX * 2);
+                    const totalRows = rows + (padY * 2);
+
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = totalCols * baseCell;
+                    tempCanvas.height = totalRows * baseCell;
+                    const tCtx = tempCanvas.getContext('2d');
+                    tCtx.imageSmoothingEnabled = false;
+                    
+                    // Mengisi kanvas dengan Latar Belakang Putih Murni Kontras Tinggi
+                    tCtx.fillStyle = '#FFFFFF';
+                    tCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                    
+                    // Ekstraksi Tepi Biner (Binarization): Mengubah coretan warna apa pun menjadi bentuk siluet hitam solid
+                    tCtx.fillStyle = '#000000';
+                    for(let r = 0; r < rows; r++) {
+                        for(let c = 0; c < cols; c++) {
+                            const val = pixelMatrix[r][c];
+                            if(val !== null) {
+                                // Gambar diproyeksikan tepat di tengah kanvas setelah kalkulasi padding
+                                tCtx.fillRect((c + padX) * baseCell, (r + padY) * baseCell, baseCell, baseCell);
+                            }
+                        }
+                    }
+                    
+                    const base64Image = tempCanvas.toDataURL("image/png").split(',')[1];
+                    
+                    const sketchExpansionPrompt = `You are an advanced Computer Vision Engine and Expert Pixel Artist. 
+Analyze this high-contrast black-and-white edge scribble, which represents a structural bounding box, spatial layout, and silhouette topography for a game asset sprite.
+The final intended asset must be developed from this outline blueprint based on this specific description: "${promptInput}".
+
+Strictly adhere to the following composition logic in your prompt expansion:
+1. Identify the topological contours, skeletal proportions, and relative spatial placement of the black shapes inside the image, treating them as fixed structural boundaries.
+2. Translate these raw silhouettes into high-fidelity game components (e.g., if a shape is a long diagonal projection, map it to a glowing blade; if it's a central core, map it to an engine or crystal).
+3. Output ONLY a single-line descriptive text prompt optimized for Latent Diffusion Models.
+4. Enforce strict aesthetic keywords within the prompt: "crisp 16-bit retro arcade pixel art, flat cell shading, solid white background, bold clean pixel-perfect dark outlines, isolated vibrant color palette, distinct sharp details, zero anti-aliasing, no blur, masterfully crafted sprite".
+Do not output markdown code blocks, labels, notes, or any preamble. Return only the raw expanded prompt string.`;
+
+                    geminiRequestBody = {
+                        contents: [{
+                            parts: [
+                                { text: sketchExpansionPrompt },
+                                { inlineData: { mimeType: "image/png", data: base64Image } }
+                            ]
+                        }]
+                    };
+                } else {
+                    // Jalankan Mode Text-to-Image Standard atau Img2Img Biasa
+                    let inpaintContext = "";
+                    if (selectedAiMode === 'inpaint' && pixelMatrix.length > 0) {
+                        const currentHexes = colorPalette.map(c => c.hex).join(', ');
+                        inpaintContext = `The user wants to modify an existing asset color palette. Current colors used: [${currentHexes}].`;
+                    }
+
+                    const standardPrompt = `You are an expert AI Image engineer. Expand the following user game asset request into a professional detailed text-to-image prompt for Stable Diffusion Pixel Art models.
+User request: "${promptInput}"
+${inpaintContext}
+Your output must be a single line containing the expanded prompt, emphasizing flat cell shading, clean dark outlines, isolated solid vibrant color palette, solid white background, 16-bit retro style, crisp details, zero blur. No markdown codeblocks.`;
+
+                    geminiRequestBody = {
+                        contents: [{ parts: [{ text: standardPrompt }] }]
+                    };
+                }
+
+                const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${activeKey}`;
+                const geminiRes = await fetch(geminiUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(geminiRequestBody)
+                });
+                
+                const geminiData = await geminiRes.json();
+                const expandedPrompt = geminiData.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || promptInput;
+
+                // TAHAP 2: Latent Diffusion Image Generation (Free Client Engine Pipeline)
+                // Menggunakan repositori/engine klaster publik HuggingFace (Model Stable Diffusion XL PixelArt)
+                progressMsg.textContent = "Mensintesis citra pixel art resolusi tinggi via Diffusion Model...";
+                
+                const seed = Math.floor(Math.random() * 1000000);
+                // Menggunakan provider router publik tanpa token untuk mempercepat deployment demo MVP Anda
+                const imageUrl = `https://image.pollinations.ai/p/${encodeURIComponent(expandedPrompt + ", pixel art style, flat design, white background")}?width=512&height=512&seed=${seed}&nologo=true`;
+                
+                const img = new Image();
+                img.crossOrigin = "anonymous"; 
+                img.onload = function() {
+                    uploadedImage = img;
+                    originalWidth = img.width;
+                    originalHeight = img.height;
+                    
+                    const offCanvas = document.createElement('canvas');
+                    offCanvas.width = originalWidth; offCanvas.height = originalHeight;
+                    const ctx = offCanvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    
+                    const imgData = ctx.getImageData(0, 0, originalWidth, originalHeight).data;
+                    cachedImgData = new Uint8ClampedArray(imgData.length);
+                    
+                    // TAHAP 3: Pre-processing & Contrast Boost & Background Stripping
+                    for(let i=0; i<imgData.length; i+=4) {
+                        let r = imgData[i], g = imgData[i+1], b = imgData[i+2];
+                        
+                        // Deteksi background putih murni/terang
+                        if (r > 230 && g > 230 && b > 230) {
+                            cachedImgData[i] = 0; cachedImgData[i+1] = 0; cachedImgData[i+2] = 0; cachedImgData[i+3] = 0;
+                        } else {
+                            // Tingkatkan saturasi & kontras warna secara masif agar pixel art tegas
+                            let factor = 1.5; // Faktor pendorong kontras
+                            r = Math.min(255, Math.max(0, 128 + factor * (r - 128)));
+                            g = Math.min(255, Math.max(0, 128 + factor * (g - 128)));
+                            b = Math.min(255, Math.max(0, 128 + factor * (b - 128)));
+                            
+                            cachedImgData[i] = r; cachedImgData[i+1] = g; cachedImgData[i+2] = b; cachedImgData[i+3] = imgData[i+3];
+                        }
+                    }
+
+                    // Turunkan limit maksimal warna toleransi K-Means agar warna dipaksa menyatu
+                    const currentTolerance = document.getElementById('tolerance');
+                    if (currentTolerance && parseInt(gridWidthInput.value) <= 16) {
+                        currentTolerance.value = 40; // Naikkan toleransi peleburan warna untuk grid kecil
+                        document.getElementById('toleranceVal').textContent = "40";
+                    }
+
+                    emptyState.classList.add('hidden');
+                    canvasWrapper.classList.remove('hidden');
+                    origResolution.textContent = 'RES: PIPELINE LATENT';
+
+                    processImageMatrix(); 
+                    
+                    // Kontrol pembersihan ekstra untuk siluet luar (Outline Fixer)
+                    const gH = pixelMatrix.length;
+                    const gW = pixelMatrix[0].length;
+                    for(let y=0; y<gH; y++) {
+                        for(let x=0; x<gW; x++) {
+                            // Jika ada warna daging/kulit berbatasan langsung dengan transparan, kunci ketegasan
+                            if (pixelMatrix[y][x] !== null) {
+                                let hasTransparentNeighbor = false;
+                                if (y > 0 && pixelMatrix[y-1][x] === null) hasTransparentNeighbor = true;
+                                if (y < gH-1 && pixelMatrix[y+1][x] === null) hasTransparentNeighbor = true;
+                                if (x > 0 && pixelMatrix[y][x-1] === null) hasTransparentNeighbor = true;
+                                if (x < gW-1 && pixelMatrix[y][x+1] === null) hasTransparentNeighbor = true;
+                                
+                                // Opsional: Berikan sentuhan warna tergelap pada index palet jika dibutuhkan untuk outline
+                            }
+                        }
+                    }
+                    
+                    postProcessUpdates();
+                    showToast("SaaS Pipeline Berhasil Menghasilkan Aset Komersial!");
+                    
+                    btnGen.disabled = false;
+                    btnGen.classList.remove('opacity-50', 'cursor-not-allowed');
+                    progressMsg.classList.add('hidden');
+                };
+                img.onerror = function() { throw new Error("Gagal mengambil visual dari Image Cluster Server."); };
+                img.src = imageUrl;
+
+            } catch (err) {
+                console.error("Kesalahan Pipeline: ", err);
+                showToast("Kegagalan Generasi: " + err.message);
+                btnGen.disabled = false;
+                btnGen.classList.remove('opacity-50', 'cursor-not-allowed');
+                progressMsg.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>

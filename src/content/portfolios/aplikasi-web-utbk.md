@@ -8,6 +8,7 @@ startDate: '2025-01-01'
 completedDate: '2025-06-01'
 isOngoing: true
 isFeatured: false
+category: 'Web'
 techStack:
   - CSS
   - HTML

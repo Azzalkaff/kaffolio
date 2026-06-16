@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 interface Skill {
   name: string;
   icon: string;
+  level?: 'Familiar' | 'Learning' | 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
 }
 
 interface Category {
@@ -23,23 +24,43 @@ const SKILL_CATEGORIES: Category[] = [
       {
         name: 'React',
         icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/react/react-original.svg',
+        level: 'Beginner'
       },
       {
         name: 'Next.js',
         icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nextjs/nextjs-original.svg',
+        level: 'Beginner'
       },
       {
         name: 'TypeScript',
         icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/typescript/typescript-original.svg',
+        level: 'Beginner'
       },
       {
         name: 'Tailwind CSS',
         icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/tailwindcss/tailwindcss-original.svg',
+        level: 'Beginner'
       },
       {
         name: 'Vue.js',
         icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/vuejs/vuejs-original.svg',
+        level: 'Beginner'
       },
+      {
+        name: 'HTML',
+        icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/html5/html5-original.svg',
+        level: 'Beginner'
+      },
+      {
+        name: 'CSS',
+        icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/css3/css3-original.svg',
+        level: 'Beginner'
+      },
+      {
+        name: 'Javascript',
+        icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/javascript/javascript-original.svg',
+        level: 'Beginner'
+      }
     ],
   },
   {
@@ -49,22 +70,47 @@ const SKILL_CATEGORIES: Category[] = [
       {
         name: 'Node.js',
         icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nodejs/nodejs-original.svg',
+        level: 'Beginner'
       },
       {
         name: 'Express',
         icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/express/express-original.svg',
+        level: 'Familiar'
+      },
+      {
+        name: 'Java',
+        icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/java/java-original.svg',
+        level: 'Beginner'
+      },
+      {
+        name: 'C',
+        icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/c/c-original.svg',
+        level: 'Beginner'
+      },
+      {
+        name: 'Go',
+        icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/go/go-original.svg',
+        level: 'Familiar'
       },
       {
         name: 'Python',
         icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg',
+        level: 'Beginner'
       },
       {
         name: 'MongoDB',
         icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/mongodb/mongodb-original.svg',
+        level: 'Beginner'
+      },
+      {
+        name: 'SQLite',
+        icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/sqlite/sqlite-original.svg',
+        level: 'Beginner'
       },
       {
         name: 'PostgreSQL',
         icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/postgresql/postgresql-original.svg',
+        level: 'Beginner'
       },
     ],
   },
@@ -75,22 +121,27 @@ const SKILL_CATEGORIES: Category[] = [
       {
         name: 'AWS',
         icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/amazonwebservices/amazonwebservices-original-wordmark.svg',
+        level: 'Familiar'
       },
       {
         name: 'Docker',
         icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/docker/docker-original.svg',
+        level: 'Familiar'
       },
       {
         name: 'Kubernetes',
         icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/kubernetes/kubernetes-plain.svg',
+        level: 'Familiar'
       },
       {
         name: 'Git',
         icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/git/git-original.svg',
+        level: 'Intermediate'
       },
       {
         name: 'Linux',
         icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/linux/linux-original.svg',
+        level: 'Familiar'
       },
     ],
   },
@@ -98,6 +149,10 @@ const SKILL_CATEGORIES: Category[] = [
     id: 'ai',
     title: 'AI & Data',
     skills: [
+      {
+        name: 'HuggingFace',
+        icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/huggingface/huggingface-original.svg',
+      },
       {
         name: 'TensorFlow',
         icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/tensorflow/tensorflow-original.svg',
@@ -116,6 +171,72 @@ const SKILL_CATEGORIES: Category[] = [
       },
     ],
   },
+  {
+    id: 'utils',
+    title: 'Utils',
+    skills: [
+      {
+        name: 'Selenium',
+        icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/selenium/selenium-original.svg',
+      },
+      {
+        name: 'Beautiful Soup',
+        icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/beautifulsoup/beautifulsoup-original.svg',
+      },
+    ],
+  },
+  {
+    id: 'Tools',
+    title: 'Tools',
+    skills:
+      [
+        {
+          name: 'Figma',
+          icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/figma/figma-original.svg',
+          level: 'Intermediate'
+        },
+        {
+          name: 'VSCode',
+          icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/vscode/vscode-original.svg',
+          level: 'Intermediate'
+        },
+        {
+          name: 'AntiGravity',
+          icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/antigravity/antigravity-original.svg',
+          level: 'Intermediate'
+        },
+        {
+          name: 'Jira',
+          icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/jira/jira-original.svg',
+          level: 'Familiar'
+        },
+        {
+          name: 'Trello',
+          icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/trello/trello-original.svg',
+          level: 'Familiar'
+        },
+        {
+          name: 'XAMPP',
+          icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/xampp/xampp-original.svg',
+          level: 'Familiar'
+        },
+        {
+          name: 'git',
+          icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/git/git-original.svg',
+          level: 'Intermediate'
+        },
+        {
+          name: 'Obsidian',
+          icon: 'https: //cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/obsidian/obsidian-original.svg',
+          level: 'Intermediate'
+        },
+        {
+          name: 'Notion',
+          icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/notion/notion-original.svg',
+          level: 'Intermediate'
+        },
+      ]
+  }
 ];
 
 // --- Configuration ---
@@ -127,15 +248,38 @@ const SKILL_CONFIG = {
 // --- Subcomponents ---
 
 function SkillCard({ skill }: { skill: Skill }) {
+  // Fungsi kecil untuk menentukan warna berdasarkan level
+  const getLevelColor = (level?: string) => {
+    switch (level) {
+      case 'Expert': return 'bg-purple-500/10 text-purple-500 border-purple-500/20';
+      case 'Advanced': return 'bg-primary/10 text-primary border-primary/20';
+      case 'Intermediate': return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
+      case 'Beginner': return 'bg-muted text-muted-foreground border-border';
+      case 'Familiar': return 'bg-slate-500/10 text-slate-500 border-slate-500/20';
+      case 'Learning': return 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20';
+      default: return 'hidden';
+    }
+  };
+
   return (
-    <div className="flex items-center gap-4 p-4 rounded-xl bg-muted/50 border border-border hover:border-primary hover:shadow-md transition-all group">
-      <div className={`${SKILL_CONFIG.iconSizeClasses} flex-shrink-0 bg-card shadow-sm rounded-md p-2 flex items-center justify-center group-hover:scale-110 transition-transform`}>
+    <div className="flex items-center gap-4 p-4 rounded-xl bg-muted/50 border border-border hover:border-primary hover:shadow-md transition-all group relative overflow-hidden">
+      <div className={`${SKILL_CONFIG.iconSizeClasses} flex-shrink-0 bg-card shadow-sm rounded-md p-2 flex items-center justify-center group-hover:scale-110 transition-transform z-10`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={skill.icon} alt={`${skill.name} icon`} className="w-full h-full object-contain" />
       </div>
-      <span className={`text-card-foreground font-medium ${SKILL_CONFIG.textSizeClasses} group-hover:text-primary transition-colors`}>
-        {skill.name}
-      </span>
+      <div className="flex flex-col z-10">
+        <span className={`text-card-foreground font-medium ${SKILL_CONFIG.textSizeClasses} group-hover:text-primary transition-colors`}>
+          {skill.name}
+        </span>
+        {skill.level && (
+          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border w-max mt-1 ${getLevelColor(skill.level)}`}>
+            {skill.level}
+          </span>
+        )}
+      </div>
+
+      {/* Subtle Background Glow on Hover based on Level */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
     </div>
   );
 }

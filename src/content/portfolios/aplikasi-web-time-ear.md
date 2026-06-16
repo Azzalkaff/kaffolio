@@ -7,6 +7,7 @@ shortDescription: >-
 completedDate: '2025-06-15'
 isOngoing: false
 isFeatured: true
+category: 'Web'
 techStack:
   - HTML
   - CSS

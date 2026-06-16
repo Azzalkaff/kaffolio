@@ -1,56 +1,56 @@
 import Link from 'next/link';
-import { ArrowRight, ExternalLink, Search } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { getAllPortfolios } from '@/lib/mdx';
 import FadeIn, { StaggerContainer, StaggerItem } from '@/components/shared/FadeIn';
-import { TypewriterText } from '@/components/shared/Typewriter';
 import PortfolioCard from './PortfolioCard';
+import DeveloperMarquee from './DeveloperMarquee';
+import ProjectsGallery from './ProjectsGallery';
 
 /**
  * Komponen untuk menampilkan daftar proyek atau portofolio.
- * Menggunakan MDX files untuk sumber data.
- * 
- * @returns {JSX.Element} Bagian proyek dengan grid layout
+ * Menggunakan pola "Minimalist Agency Grid" (2-Column Offset) dan Marquee Text.
  */
 export default function ProjectsSection() {
   const portfolios = getAllPortfolios();
+  const displayedPortfolios = portfolios.slice(0, 8); // Sebaiknya genap untuk grid 2-kolom
 
   return (
-    <div className="space-y-12">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h2 className="text-4xl md:text-5xl font-bold text-foreground">
-          <TypewriterText text="Projects" />
-        </h2>
-        <p className="text-lg text-muted-foreground">Explore my latest case studies and works</p>
+    <div className="w-full space-y-24 md:space-y-40">
+
+      {/* Top Marquee */}
+      <DeveloperMarquee />
+
+      <div className="max-w-7xl mx-auto w-full px-4 md:px-8 lg:px-12 space-y-16 md:space-y-32">
+        {/* Description */}
+        <div className="flex flex-col gap-6 max-w-4xl">
+          <p className="text-2xl md:text-4xl text-foreground font-serif italic leading-relaxed max-w-3xl">
+            Selected works
+          </p>
+        </div>
+
+        {/* The Interactive Filtered Grid Gallery */}
+        <ProjectsGallery portfolios={displayedPortfolios} />
+
+        {/* View All Projects Button */}
+        {portfolios.length > 8 && (
+          <FadeIn delay={0.4} direction="up" className="flex justify-center mt-32">
+            <Link
+              href="/gallery"
+              className="group relative px-10 py-5 bg-foreground text-background rounded-full font-bold text-xl uppercase tracking-widest overflow-hidden transition-all hover:scale-105 active:scale-95"
+            >
+              <div className="absolute inset-0 bg-primary opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <span className="relative z-10 flex items-center gap-4 text-background">
+                Explore The Archive
+                <ArrowRight size={24} className="transition-transform duration-300 group-hover:translate-x-2" />
+              </span>
+            </Link>
+          </FadeIn>
+        )}
       </div>
 
-      {/* Search Bar Placeholder */}
-      <FadeIn delay={0.2} direction="up" className="relative max-w-md mx-auto">
-        <input
-          type="text"
-          placeholder="Search projects..."
-          className="w-full px-6 py-3 border border-border/50 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-base bg-background"
-          disabled
-        />
-        <Search
-          className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground"
-          size={20}
-        />
-      </FadeIn>
+      {/* Bottom Marquee */}
+      <DeveloperMarquee reverse={true} />
 
-      {/* Portfolio Grid */}
-      <FadeIn delay={0.3} direction="up">
-        <p className="text-center text-muted-foreground mb-6">
-          Showing {portfolios.length} project{portfolios.length !== 1 ? 's' : ''}
-        </p>
-      </FadeIn>
-      <StaggerContainer staggerChildren={0.15} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {portfolios.map((project) => (
-          <StaggerItem key={project.id}>
-            <PortfolioCard {...project} isAdmin={false} />
-          </StaggerItem>
-        ))}
-      </StaggerContainer>
     </div>
   );
 }
