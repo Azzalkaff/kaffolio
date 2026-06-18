@@ -7,15 +7,15 @@ import { useRouter } from 'next/navigation';
 
 const items = [
   // Top slice: -36 to 36
-  { id: 'design', label: 'Design', icon: PenTool, href: '/creative', startAngle: -36, endAngle: 36, fillClass: 'fill-zinc-100 dark:fill-zinc-900' },
+  { id: 'design', label: 'Design', icon: PenTool, href: '/creative', startAngle: -36, endAngle: 36, fillClass: 'fill-primary/60' },
   // Right slice: 36 to 108
-  { id: 'dev', label: 'Developer', icon: Code2, href: '/developer', startAngle: 36, endAngle: 108, fillClass: 'fill-zinc-200 dark:fill-zinc-800' },
+  { id: 'dev', label: 'Developer', icon: Code2, href: '/developer', startAngle: 36, endAngle: 108, fillClass: 'fill-primary/40' },
   // Bottom Right slice: 108 to 180
-  { id: 'shop', label: 'Shop', icon: Store, href: '/shop', startAngle: 108, endAngle: 180, fillClass: 'fill-zinc-300 dark:fill-zinc-700' },
+  { id: 'shop', label: 'Shop', icon: Store, href: '/shop', startAngle: 108, endAngle: 180, fillClass: 'fill-primary/10' },
   // Bottom Left slice: 180 to 252
-  { id: 'blog', label: 'Blog', icon: BookOpen, href: '/blog', startAngle: 180, endAngle: 252, fillClass: 'fill-zinc-200 dark:fill-zinc-800' },
+  { id: 'blog', label: 'Blog', icon: BookOpen, href: '/blog', startAngle: 180, endAngle: 252, fillClass: 'fill-primary/30' },
   // Left slice: 252 to 324 (-108 to -36)
-  { id: 'marketing', label: 'Marketing', icon: TrendingUp, href: '/marketing', startAngle: 252, endAngle: 324, fillClass: 'fill-zinc-100 dark:fill-zinc-900' }
+  { id: 'marketing', label: 'Marketing', icon: TrendingUp, href: '/marketing', startAngle: 252, endAngle: 324, fillClass: 'fill-primary/50' }
 ];
 
 function getSlicePath(startAngle: number, endAngle: number, innerRadius: number, outerRadius: number) {
@@ -247,7 +247,7 @@ export default function WheelMenu() {
               <path
                 key={item.id}
                 d={path}
-                className={`transition-all duration-300 cursor-pointer border stroke-background stroke-[2px] ${
+                className={`transition-all duration-300 cursor-pointer stroke-white stroke-[2px] ${
                   isThisHovered ? 'fill-primary' : item.fillClass
                 } hover:fill-primary`}
                 onClick={() => !isSpinning && handleNavigation(item.href, item.id)}
@@ -269,7 +269,7 @@ export default function WheelMenu() {
           const y = Math.sin(angleRad) * midRadius;
 
           const isThisHovered = hoveredSlice === item.id;
-          const iconColorClass = isThisHovered ? 'text-primary-foreground' : 'text-foreground';
+          const iconColorClass = isThisHovered ? 'text-primary-foreground' : 'text-black';
 
           return (
             <div
@@ -280,7 +280,7 @@ export default function WheelMenu() {
               <div className={`transition-colors duration-300 ${iconColorClass}`}>
                 <item.icon size={28} strokeWidth={2} />
               </div>
-              <span className={`text-sm font-bold tracking-wide transition-colors duration-300 ${isThisHovered ? 'text-primary-foreground' : 'text-foreground opacity-80'}`}>
+              <span className={`text-sm font-bold tracking-wide transition-colors duration-300 ${isThisHovered ? 'text-primary-foreground' : 'text-black opacity-80'}`}>
                 {item.label}
               </span>
             </div>

@@ -99,9 +99,9 @@ export default function MainHeroText() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.8, ease: "easeOut" }}
-        className="text-xl md:text-2xl text-muted-foreground mt-8 max-w-2xl font-medium leading-relaxed"
+        className="text-lg md:text-xl text-muted-foreground mt-8 max-w-2xl font-medium leading-relaxed"
       >
-        Syahid Alkaff. Computer Engineering Student & creative thinker.
+        Hi, saya Syahid Alkaff. Saya menggabungkan keahlian <span className="font-bold text-foreground">Software Development</span>, <span className="font-bold text-foreground">Product Design</span>, dan <span className="font-bold text-foreground">Digital Marketing</span> untuk membangun produk yang tidak hanya berfungsi dengan baik, tapi juga memiliki dampak bisnis.
       </motion.p>
     </div>
   );
