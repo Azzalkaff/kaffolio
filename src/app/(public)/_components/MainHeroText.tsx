@@ -51,7 +51,7 @@ export default function MainHeroText() {
     visible: {
       y: 0,
       opacity: 1,
-      transition: { duration: 0.8, ease: [0.21, 0.47, 0.32, 0.98] }, // Custom easeOutCubic
+      transition: { duration: 0.8, ease: [0.21, 0.47, 0.32, 0.98] as const }, // Custom easeOutCubic
     },
   };
 
