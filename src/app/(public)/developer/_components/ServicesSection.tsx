@@ -16,19 +16,19 @@ const SERVICES: ServiceItem[] = [
   {
     id: 'frontend',
     title: 'Frontend Development',
-    description: 'Membangun antarmuka web interaktif, responsif, dan mudah diakses menggunakan React dan Next.js.',
+    description: 'Building interactive, responsive, and accessible web interfaces using React and Next.js.',
     icon: <MonitorSmartphone className="w-10 h-10 text-primary" />
   },
   {
     id: 'backend',
     title: 'Backend Development',
-    description: 'Mengembangkan API yang aman, cepat, dan terukur menggunakan Node.js dan database modern.',
+    description: 'Developing secure, fast, and scalable APIs using Node.js and modern databases.',
     icon: <Server className="w-10 h-10 text-primary" />
   },
   {
     id: 'uiux',
     title: 'UI/UX Design',
-    description: 'Merancang pengalaman pengguna yang intuitif dengan fokus pada estetika dan kemudahan penggunaan.',
+    description: 'Designing intuitive user experiences with a focus on aesthetics and ease of use.',
     icon: <Palette className="w-10 h-10 text-primary" />
   }
 ];
@@ -45,7 +45,7 @@ export default function ServicesSection() {
         <div className="text-center space-y-4 max-w-3xl mx-auto">
           <h2 className="text-4xl md:text-5xl font-bold text-foreground">What I Do</h2>
           <p className="text-lg text-muted-foreground">
-            Spesialisasi dan layanan teknis yang dapat saya berikan untuk membantu menyelesaikan masalah Anda.
+            Specialized technical services I provide to help solve your problems and build great products.
           </p>
         </div>
       </FadeIn>
