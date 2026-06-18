@@ -34,7 +34,7 @@ export default function Navigation({ links = [] }: NavigationProps) {
                   <Link
                     key={link.label}
                     href={link.href}
-                    className={`hover:text-primary transition-colors ${isActive ? 'text-primary font-semibold' : 'text-muted-foreground'}`}
+                    className={`px-3 py-1.5 rounded-md transition-colors duration-200 hover:bg-primary hover:text-white ${isActive ? 'text-primary font-semibold' : 'text-muted-foreground'}`}
                   >
                     {link.label}
                   </Link>
