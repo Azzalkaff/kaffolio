@@ -7,15 +7,15 @@ import { useRouter } from 'next/navigation';
 
 const items = [
   // Top slice: -36 to 36
-  { id: 'design', label: 'Design', icon: PenTool, href: '/creative', startAngle: -36, endAngle: 36, fillClass: 'fill-primary/60' },
+  { id: 'design', label: 'Design', icon: PenTool, href: '/creative', startAngle: -36, endAngle: 36, fillClass: 'fill-primary/60', audio: '/audio/wheel/antek2-aseng.mp3' },
   // Right slice: 36 to 108
-  { id: 'dev', label: 'Developer', icon: Code2, href: '/developer', startAngle: 36, endAngle: 108, fillClass: 'fill-primary/40' },
+  { id: 'dev', label: 'Developer', icon: Code2, href: '/developer', startAngle: 36, endAngle: 108, fillClass: 'fill-primary/40', audio: '/audio/wheel/saya-akan-lawan.mp3' },
   // Bottom Right slice: 108 to 180
-  { id: 'shop', label: 'Shop', icon: Store, href: '/shop', startAngle: 108, endAngle: 180, fillClass: 'fill-primary/10' },
+  { id: 'shop', label: 'Shop', icon: Store, href: '/shop', startAngle: 108, endAngle: 180, fillClass: 'fill-primary/10', audio: '/audio/wheel/wi-wo-de-tok.mp3' },
   // Bottom Left slice: 180 to 252
-  { id: 'blog', label: 'Blog', icon: BookOpen, href: '/blog', startAngle: 180, endAngle: 252, fillClass: 'fill-primary/30' },
+  { id: 'blog', label: 'Blog', icon: BookOpen, href: '/blog', startAngle: 180, endAngle: 252, fillClass: 'fill-primary/30', audio: '/audio/wheel/sori-ye.mp3' },
   // Left slice: 252 to 324 (-108 to -36)
-  { id: 'marketing', label: 'Marketing', icon: TrendingUp, href: '/marketing', startAngle: 252, endAngle: 324, fillClass: 'fill-primary/50' }
+  { id: 'marketing', label: 'Marketing', icon: TrendingUp, href: '/marketing', startAngle: 252, endAngle: 324, fillClass: 'fill-primary/50', audio: '/audio/wheel/mas-bahlil-ganteng.mp3' }
 ];
 
 function getSlicePath(startAngle: number, endAngle: number, innerRadius: number, outerRadius: number) {
@@ -44,79 +44,83 @@ function getSlicePath(startAngle: number, endAngle: number, innerRadius: number,
   ].join(' ');
 }
 
-function playCarCrashSequence() {
+function playClickSound() {
+  try {
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1000, now);
+    osc.frequency.exponentialRampToValueAtTime(150, now + 0.1);
+
+    gainNode.gain.setValueAtTime(0.18, now);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
+
+    osc.connect(gainNode);
+    gainNode.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.1);
+  } catch(e) {}
+}
+
+function playSpinAudio() {
   if (typeof window === 'undefined') return { stop: () => {} };
-  const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-  if (!AudioContext) return { stop: () => {} };
-
-  const audioCtx = new AudioContext();
-
-  // --- 1. TIRE SCREECH (Loops while spinning) ---
-  const screechBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.5, audioCtx.sampleRate);
-  const screechData = screechBuffer.getChannelData(0);
-  for (let i = 0; i < screechBuffer.length; i++) {
-    // High-pitched screech base
-    screechData[i] = (Math.random() * 2 - 1) * 0.5;
-  }
   
-  const screechSource = audioCtx.createBufferSource();
-  screechSource.buffer = screechBuffer;
-  screechSource.loop = true;
+  const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+  if (!AudioContextClass) return { stop: () => {} };
+  
+  const ctx = new AudioContextClass();
+  let isActive = true;
+  
+  const playTick = () => {
+    if (!isActive) return;
+    try {
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(1800, now);
+      osc.frequency.exponentialRampToValueAtTime(150, now + 0.02);
+      
+      gainNode.gain.setValueAtTime(0.08, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.02);
+      
+      osc.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.02);
+    } catch (e) {}
+  };
 
-  const screechFilter = audioCtx.createBiquadFilter();
-  screechFilter.type = 'bandpass';
-  screechFilter.frequency.value = 1200; // Tire squeal freq
-  screechFilter.Q.value = 5;
+  let tickInterval = 80; // start fast (spinning speed)
+  const runTicks = () => {
+    if (!isActive) return;
+    playTick();
+    // Decelerating effect (ticks slow down over time)
+    tickInterval = Math.min(600, tickInterval + 18);
+    setTimeout(runTicks, tickInterval);
+  };
 
-  const screechGain = audioCtx.createGain();
-  screechGain.gain.setValueAtTime(0, audioCtx.currentTime);
-  screechGain.gain.linearRampToValueAtTime(1.5, audioCtx.currentTime + 0.2); // Fade in screech
-
-  screechSource.connect(screechFilter);
-  screechFilter.connect(screechGain);
-  screechGain.connect(audioCtx.destination);
-  screechSource.start();
+  runTicks();
 
   return {
     stop: () => {
-      // Stop screech abruptly
-      screechGain.gain.setValueAtTime(0, audioCtx.currentTime);
-      try { screechSource.stop(); } catch(e) {}
-
-      // --- 2. THE CRASH EXPLOSION ---
-      const crashBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 2, audioCtx.sampleRate);
-      const crashData = crashBuffer.getChannelData(0);
-      for (let i = 0; i < crashBuffer.length; i++) {
-        // Metallic crunch noise
-        crashData[i] = (Math.random() * 2 - 1);
-      }
-
-      const crashSource = audioCtx.createBufferSource();
-      crashSource.buffer = crashBuffer;
-
-      const crashFilter = audioCtx.createBiquadFilter();
-      crashFilter.type = 'lowpass';
-      // Crunch starts bright, drops to muddy low end quickly
-      crashFilter.frequency.setValueAtTime(2000, audioCtx.currentTime);
-      crashFilter.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 1);
-
-      const crashGain = audioCtx.createGain();
-      crashGain.gain.setValueAtTime(3, audioCtx.currentTime); // LOUD impact
-      crashGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
-
-      crashSource.connect(crashFilter);
-      crashFilter.connect(crashGain);
-      crashGain.connect(audioCtx.destination);
-      crashSource.start();
-
+      isActive = false;
       setTimeout(() => {
         try {
-          if (audioCtx.state !== 'closed') audioCtx.close();
+          if (ctx.state !== 'closed') ctx.close();
         } catch(e) {}
-      }, 2000);
+      }, 100);
     }
   };
 }
+
 
 export default function WheelMenu() {
   const [isHovered, setIsHovered] = useState(false);
@@ -124,25 +128,15 @@ export default function WheelMenu() {
   const [rotation, setRotation] = useState(0);
   const router = useRouter();
   const [hoveredSlice, setHoveredSlice] = useState<string | null>(null);
-  
-  // Transition states
-  const [isNavigating, setIsNavigating] = useState(false);
-  const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
+  const [blinkingSliceId, setBlinkingSliceId] = useState<string | null>(null);
   
   // Dimensions
   const outerRadius = 240;
   const innerRadius = 0; // Full pie
   const gap = 0; 
-
+  
   const handleNavigation = (href: string, id: string) => {
-    if (isNavigating) return;
-    setIsNavigating(true);
-    setNavigatingTo(id);
-    
-    // Wait for the portal expand animation to finish before routing
-    setTimeout(() => {
-      router.push(href);
-    }, 600);
+    router.push(href);
   };
 
   const [isSpinning, setIsSpinning] = useState(false);
@@ -158,15 +152,37 @@ export default function WheelMenu() {
   }, []);
 
   const handleSpin = () => {
-    if (isSpinning || isNavigating) return;
+    if (isSpinning) return;
     setIsSpinning(true);
     setHoveredSlice(null);
+    setBlinkingSliceId(null);
     
-    // Start procedural car crash sequence (screech first)
-    audioControlRef.current = playCarCrashSequence();
+    // Play quick physical click sound on button press
+    playClickSound();
+    
+    // Start spin audio sequence
+    audioControlRef.current = playSpinAudio();
 
-    // Choose the target
-    const targetIndex = Math.floor(Math.random() * items.length);
+    // Choose the target with weighted probabilities
+    const r = Math.random();
+    let targetIndex = 0;
+
+    // Probabilities: design (25%), dev (25%), others (16.6666% each)
+    if (r < 0.25) {
+      targetIndex = items.findIndex(i => i.id === 'design');
+    } else if (r < 0.50) {
+      targetIndex = items.findIndex(i => i.id === 'dev');
+    } else if (r < 0.666666) {
+      targetIndex = items.findIndex(i => i.id === 'shop');
+    } else if (r < 0.833333) {
+      targetIndex = items.findIndex(i => i.id === 'blog');
+    } else {
+      targetIndex = items.findIndex(i => i.id === 'marketing');
+    }
+
+    // Fallback if not found (shouldn't happen)
+    if (targetIndex === -1) targetIndex = 0;
+
     const selectedItem = items[targetIndex];
 
     const midAngle = (selectedItem.startAngle + selectedItem.endAngle) / 2;
@@ -186,16 +202,30 @@ export default function WheelMenu() {
       
       rotationRef.current = nextRotation;
       setHoveredSlice(selectedItem.id);
-      
-      setTimeout(() => {
+      setBlinkingSliceId(selectedItem.id); // Start blinking target slice!
+
+      // Play the specific landed slice audio voice line
+      const landAudio = new Audio(selectedItem.audio);
+      landAudio.volume = 0.95;
+
+      landAudio.addEventListener('ended', () => {
         setIsSpinning(false);
+        setBlinkingSliceId(null); // Stop blinking!
         handleNavigation(selectedItem.href, selectedItem.id);
-      }, 800); 
+      });
+
+      landAudio.play().catch(e => {
+        console.warn("Landed audio blocked:", e);
+        // Fallback if audio fails to play
+        setIsSpinning(false);
+        setBlinkingSliceId(null);
+        handleNavigation(selectedItem.href, selectedItem.id);
+      });
     }, 4000); // Wait for 4 seconds spin animation
   };
 
   useAnimationFrame((t, delta) => {
-    if (!isNavigating && !isSpinning && !isHovered) {
+    if (!isSpinning && !isHovered) {
       rotationRef.current += 10 * (delta / 1000);
       setRotation(rotationRef.current);
     }
@@ -207,17 +237,6 @@ export default function WheelMenu() {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Hardware Accelerated Ripple Transition */}
-      <motion.div 
-        className="absolute z-50 w-24 h-24 rounded-full pointer-events-none bg-primary"
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ 
-          scale: isNavigating ? 50 : 0, 
-          opacity: isNavigating ? 1 : 0 
-        }}
-        transition={{ duration: 0.6, ease: [0.43, 0.13, 0.23, 0.96] }}
-      />
-
       {/* Pointer Ticker */}
       <div className="absolute -top-6 z-50 drop-shadow-xl">
         <div className="w-8 h-10 bg-primary" style={{ clipPath: 'polygon(50% 100%, 0 0, 100% 0)' }}></div>
@@ -226,11 +245,9 @@ export default function WheelMenu() {
       {/* SVG Donut Wheel with Drop Shadow for Depth */}
       <motion.div 
         className="absolute w-full h-full flex items-center justify-center drop-shadow-xl"
-        animate={{ opacity: isNavigating ? 0 : 1, scale: isNavigating ? 0.8 : 1, rotate: rotation }}
+        animate={{ rotate: rotation }}
         transition={{ 
           rotate: isSpinning ? { duration: 4, ease: [0.1, 0.9, 0.2, 1] } : { duration: 0 },
-          opacity: { duration: 0.4 },
-          scale: { duration: 0.4 }
         }}
       >
         <svg 
@@ -242,13 +259,14 @@ export default function WheelMenu() {
           {items.map((item) => {
             const path = getSlicePath(item.startAngle + gap, item.endAngle - gap, innerRadius, outerRadius);
             const isThisHovered = hoveredSlice === item.id;
+            const isThisBlinking = blinkingSliceId === item.id;
             
             return (
               <path
                 key={item.id}
                 d={path}
                 className={`transition-all duration-300 cursor-pointer stroke-white stroke-[2px] ${
-                  isThisHovered ? 'fill-primary' : item.fillClass
+                  isThisBlinking ? 'animate-slice-blink' : isThisHovered ? 'fill-primary' : item.fillClass
                 } hover:fill-primary`}
                 onClick={() => !isSpinning && handleNavigation(item.href, item.id)}
                 onMouseEnter={() => !isSpinning && setHoveredSlice(item.id)}
@@ -291,7 +309,7 @@ export default function WheelMenu() {
       {/* Center piece element with elevation */}
       <button 
         onClick={handleSpin}
-        disabled={isSpinning || isNavigating}
+        disabled={isSpinning}
         className="absolute z-40 w-28 h-28 rounded-full bg-background border border-border shadow-2xl flex flex-col items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-transform"
       >
         <div className="w-full h-full rounded-full bg-gradient-to-tr from-primary/5 to-transparent flex items-center justify-center">

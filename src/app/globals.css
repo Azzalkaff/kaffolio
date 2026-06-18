@@ -72,3 +72,54 @@ h1,
 h2 {
   font-family: var(--font-secondary);
 }
+
+@keyframes glitch-shake {
+  0% {
+    transform: translate(0) skew(0deg);
+  }
+  20% {
+    transform: translate(-3px, 1px) skew(-2deg);
+  }
+  40% {
+    transform: translate(2px, -2px) skew(3deg);
+  }
+  60% {
+    transform: translate(-1px, 2px) skew(-1deg);
+  }
+  80% {
+    transform: translate(3px, 1px) skew(2deg);
+  }
+  100% {
+    transform: translate(0) skew(0deg);
+  }
+}
+
+.animate-text-glitch {
+  display: inline-block;
+  animation: glitch-shake 0.15s infinite;
+  text-shadow: 
+    -2px -1px 0px rgba(239, 68, 68, 0.7), /* Red shadow */
+    2px 1px 0px rgba(59, 130, 246, 0.7);  /* Blue shadow */
+}
+
+/* Dark mode override for cleaner visual contrast */
+.dark .animate-text-glitch {
+  text-shadow: 
+    -2px -1px 0px rgba(244, 63, 94, 0.9), /* Rose shadow */
+    2px 1px 0px rgba(6, 182, 212, 0.9);   /* Cyan shadow */
+}
+
+@keyframes slice-blink {
+  0%, 100% {
+    opacity: 1;
+    fill: var(--primary);
+  }
+  50% {
+    opacity: 0.15;
+    fill: transparent;
+  }
+}
+
+.animate-slice-blink {
+  animation: slice-blink 0.2s infinite alternate linear;
+}
