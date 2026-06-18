@@ -71,8 +71,7 @@ export default function CertificateSection() {
           <TypewriterText text="Awards & Certifications." />
         </h2>
         <p className="text-lg md:text-xl text-muted-foreground font-medium max-w-2xl mx-auto">
-          Awards, competition achievements, and validation of professional skills. <br/>
-          <span className="text-base opacity-80">(Penghargaan, pencapaian kompetisi, dan validasi keahlian profesional.)</span>
+          Awards, competition achievements, and validation of professional skills.
         </p>
       </div>
 
