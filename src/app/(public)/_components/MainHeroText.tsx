@@ -1,39 +1,122 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useState, useRef } from 'react';
+import { useState, useEffect } from 'react';
 
 const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_+{}[]|;:?,./";
 
+let hasRunGlitch = false;
+
 export default function MainHeroText() {
   const [worldText, setWorldText] = useState("worlds");
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [glitchText, setGlitchText] = useState("I Create");
+  const [isGlitching, setIsGlitching] = useState(false);
 
-  const handleScramble = () => {
-    let iteration = 0;
-    const targetWord = "worlds";
-    
-    if (intervalRef.current) clearInterval(intervalRef.current);
+  useEffect(() => {
+    if (hasRunGlitch) return;
+    hasRunGlitch = true;
 
-    intervalRef.current = setInterval(() => {
-      setWorldText(
-        targetWord
-          .split("")
-          .map((letter, index) => {
-            if (index < iteration) {
-              return targetWord[index];
-            }
-            return LETTERS[Math.floor(Math.random() * LETTERS.length)];
-          })
-          .join("")
-      );
+    let initialTriggerTimeoutId: NodeJS.Timeout;
 
-      if (iteration >= targetWord.length) {
-        clearInterval(intervalRef.current!);
+    const playBellSound = () => {
+      try {
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        if (!AudioContextClass) return;
+        const audioCtx = new AudioContextClass();
+        const now = audioCtx.currentTime;
+
+        // Rich bell/chime chord: G5 (783.99 Hz), C6 (1046.50 Hz), E6 (1318.51 Hz)
+        const freqs = [783.99, 1046.50, 1318.51];
+        const gains = [0.3, 0.2, 0.1];
+
+        freqs.forEach((freq, i) => {
+          const osc = audioCtx.createOscillator();
+          const gainNode = audioCtx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now);
+
+          gainNode.gain.setValueAtTime(gains[i], now);
+          gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 2.0);
+
+          osc.connect(gainNode);
+          gainNode.connect(audioCtx.destination);
+
+          osc.start(now);
+          osc.stop(now + 2.0);
+        });
+      } catch (e) {
+        console.warn("AudioContext block:", e);
       }
-      iteration += 1 / 3;
-    }, 30);
-  };
+    };
+
+    // 1. Automatic Glitch for "I Create"
+    const triggerGlitch = () => {
+      setIsGlitching(true);
+      let count = 0;
+      const targetWord = "I Create";
+      const glitchChars = "I Cr3@t3!_[]X0//";
+      
+      const interval = setInterval(() => {
+        setGlitchText(
+          targetWord
+            .split("")
+            .map((char) => {
+              if (char === " ") return " ";
+              if (Math.random() > 0.6) {
+                return glitchChars[Math.floor(Math.random() * glitchChars.length)];
+              }
+              return char;
+            })
+            .join("")
+        );
+        count++;
+        if (count > 5) {
+          clearInterval(interval);
+          setGlitchText("I Create");
+          setIsGlitching(false);
+        }
+      }, 70);
+    };
+
+    // 2. Automatic Scramble for "worlds"
+    const triggerScramble = () => {
+      let iteration = 0;
+      const targetWord = "worlds";
+
+      // Play bell sound
+      playBellSound();
+      
+      const interval = setInterval(() => {
+        setWorldText(
+          targetWord
+            .split("")
+            .map((letter, index) => {
+              if (index < iteration) {
+                return targetWord[index];
+              }
+              return LETTERS[Math.floor(Math.random() * LETTERS.length)];
+            })
+            .join("")
+        );
+
+        if (iteration >= targetWord.length) {
+          clearInterval(interval);
+        }
+        iteration += 0.1; // 6 / 0.1 = 60 steps
+      }, 80); // 60 steps * 80ms = 4800ms (~5 seconds)
+    };
+
+    // Trigger the sequence exactly once after 1.5 seconds
+    initialTriggerTimeoutId = setTimeout(() => {
+      triggerGlitch();
+      triggerScramble();
+    }, 1500);
+
+    return () => {
+      clearTimeout(initialTriggerTimeoutId);
+    };
+  }, []);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -67,9 +150,9 @@ export default function MainHeroText() {
         <div className="overflow-hidden pb-2">
           <motion.span
             variants={itemVariants}
-            className="block text-5xl md:text-6xl lg:text-7xl font-light text-foreground"
+            className={`block text-5xl md:text-6xl lg:text-7xl font-light text-foreground ${isGlitching ? 'animate-text-glitch' : ''}`}
           >
-            I Create
+            {glitchText}
           </motion.span>
         </div>
 
@@ -87,8 +170,7 @@ export default function MainHeroText() {
         <div className="overflow-hidden pt-2 pb-4">
           <motion.span
             variants={itemVariants}
-            onMouseEnter={handleScramble}
-            className="block text-6xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter text-foreground cursor-pointer transition-colors hover:text-primary/80"
+            className="block text-6xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter text-foreground transition-colors hover:text-primary/80"
           >
             {worldText}<span className="text-primary">.</span>
           </motion.span>

@@ -3,6 +3,7 @@ import './globals.css';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import SplashScreen from '@/components/shared/SplashScreen';
 import Footer from '@/components/shared/Footer';
+import SupermarketBGM from '@/components/shared/SupermarketBGM';
 
 export const metadata: Metadata = {
   title: 'Kaffolio - Portfolio',
@@ -20,6 +21,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <SplashScreen />
           <main className="w-full relative z-10 min-h-screen">{children}</main>
+          <SupermarketBGM />
           <Footer />
         </ThemeProvider>
       </body>
