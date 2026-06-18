@@ -57,7 +57,7 @@ function playClickSound() {
     osc.frequency.setValueAtTime(1000, now);
     osc.frequency.exponentialRampToValueAtTime(150, now + 0.1);
 
-    gainNode.gain.setValueAtTime(0.18, now);
+    gainNode.gain.setValueAtTime(0.7, now);
     gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
 
     osc.connect(gainNode);
@@ -88,7 +88,7 @@ function playSpinAudio() {
       osc.frequency.setValueAtTime(1800, now);
       osc.frequency.exponentialRampToValueAtTime(150, now + 0.02);
       
-      gainNode.gain.setValueAtTime(0.08, now);
+      gainNode.gain.setValueAtTime(0.4, now);
       gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.02);
       
       osc.connect(gainNode);
