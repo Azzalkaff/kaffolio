@@ -1,3 +1,4 @@
+import React from 'react';
 import { MonitorSmartphone, Server, Palette } from 'lucide-react';
 import FadeIn, { StaggerContainer, StaggerItem } from '@/components/shared/FadeIn';
 
@@ -8,7 +9,7 @@ interface ServiceItem {
   id: string;
   title: string;
   description: string;
-  icon: JSX.Element;
+  icon: React.ReactElement;
 }
 
 const SERVICES: ServiceItem[] = [
@@ -35,7 +36,7 @@ const SERVICES: ServiceItem[] = [
 /**
  * Komponen untuk menampilkan layanan atau keahlian utama yang ditawarkan.
  * 
- * @returns {JSX.Element} Bagian layanan
+ * @returns {React.ReactElement} Bagian layanan
  */
 export default function ServicesSection() {
   return (

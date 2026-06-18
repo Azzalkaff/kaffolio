@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
-import { ExternalLink, Github, Calendar, Target, Lightbulb, Rocket, ArrowLeft, Code } from 'lucide-react';
+import { ExternalLink, Calendar, Target, Lightbulb, Rocket, ArrowLeft, Code } from 'lucide-react';
 import { getPortfolioBySlug, Portfolio, getAllPortfolios } from '@/lib/mdx';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
@@ -14,7 +14,7 @@ interface PageProps {
  * Komponen pembantu untuk menampilkan bagian atas (Hero) dari case study.
  *
  * @param {object} props - Berisi data project
- * @returns {JSX.Element} Bagian judul, deskripsi, dan tombol aksi
+ * @returns {React.ReactElement} Bagian judul, deskripsi, dan tombol aksi
  */
 function ProjectHero({ project }: { project: Portfolio }) {
   return (
@@ -123,7 +123,7 @@ export function generateStaticParams() {
  * Memisahkan komponen Hero untuk menjaga ukuran fungsi maksimal 50 baris.
  *
  * @param {PageProps} props - Properti Next.js berisi params (termasuk slug)
- * @returns {Promise<JSX.Element>} Antarmuka halaman detail portofolio
+ * @returns {Promise<React.ReactElement>} Antarmuka halaman detail portofolio
  */
 export default async function GalleryDetailPage({ params }: PageProps) {
   const { slug } = await params;

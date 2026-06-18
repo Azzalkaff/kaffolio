@@ -21,14 +21,14 @@ export interface DownloadButtonProps {
  * berjalan secara native di browser tanpa memicu routing Next.js.
  * 
  * @param {DownloadButtonProps} props - Properti komponen
- * @returns {JSX.Element} Elemen tombol unduh dengan ikon
+ * @returns {React.ReactElement} Elemen tombol unduh dengan ikon
  */
 export default function DownloadButton({
   fileUrl,
   fileName,
   label = 'Download',
   className = '',
-}: DownloadButtonProps): JSX.Element {
+}: DownloadButtonProps): React.ReactElement {
   return (
     <a
       href={fileUrl}
