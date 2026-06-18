@@ -7,15 +7,15 @@ import { useRouter } from 'next/navigation';
 
 const items = [
   // Top slice: -36 to 36
-  { id: 'design', label: 'Design', icon: PenTool, href: '/creative', startAngle: -36, endAngle: 36, color: 'hover:fill-pink-500/20' },
+  { id: 'design', label: 'Design', icon: PenTool, href: '/creative', startAngle: -36, endAngle: 36, fillClass: 'fill-zinc-100 dark:fill-zinc-900' },
   // Right slice: 36 to 108
-  { id: 'dev', label: 'Developer', icon: Code2, href: '/developer', startAngle: 36, endAngle: 108, color: 'hover:fill-blue-500/20' },
+  { id: 'dev', label: 'Developer', icon: Code2, href: '/developer', startAngle: 36, endAngle: 108, fillClass: 'fill-zinc-200 dark:fill-zinc-800' },
   // Bottom Right slice: 108 to 180
-  { id: 'shop', label: 'Shop', icon: Store, href: '/shop', startAngle: 108, endAngle: 180, color: 'hover:fill-purple-500/20' },
+  { id: 'shop', label: 'Shop', icon: Store, href: '/shop', startAngle: 108, endAngle: 180, fillClass: 'fill-zinc-300 dark:fill-zinc-700' },
   // Bottom Left slice: 180 to 252
-  { id: 'blog', label: 'Blog', icon: BookOpen, href: '/blog', startAngle: 180, endAngle: 252, color: 'hover:fill-orange-500/20' },
+  { id: 'blog', label: 'Blog', icon: BookOpen, href: '/blog', startAngle: 180, endAngle: 252, fillClass: 'fill-zinc-200 dark:fill-zinc-800' },
   // Left slice: 252 to 324 (-108 to -36)
-  { id: 'marketing', label: 'Marketing', icon: TrendingUp, href: '/marketing', startAngle: 252, endAngle: 324, color: 'hover:fill-green-500/20' }
+  { id: 'marketing', label: 'Marketing', icon: TrendingUp, href: '/marketing', startAngle: 252, endAngle: 324, fillClass: 'fill-zinc-100 dark:fill-zinc-900' }
 ];
 
 function getSlicePath(startAngle: number, endAngle: number, innerRadius: number, outerRadius: number) {
@@ -130,9 +130,8 @@ export default function WheelMenu() {
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
   
   // Dimensions
-  const outerRadius = 240; // Increased from 180
-  const innerRadius = 90;  // Increased from 70
-  // Remove manual gap, let SVG stroke handle separation
+  const outerRadius = 240;
+  const innerRadius = 0; // Full pie
   const gap = 0; 
 
   const handleNavigation = (href: string, id: string) => {
@@ -170,45 +169,35 @@ export default function WheelMenu() {
     const targetIndex = Math.floor(Math.random() * items.length);
     const selectedItem = items[targetIndex];
 
-    // Calculate total highlight jumps (e.g. 4 full rounds + target index)
-    const totalSteps = (5 * items.length) + targetIndex;
-    let currentStep = 0;
+    const midAngle = (selectedItem.startAngle + selectedItem.endAngle) / 2;
+    
+    // Calculate physically accurate spin rotation
+    const currentRotMod = rotationRef.current % 360;
+    const spins = 360 * 5; // 5 full spins
+    const nextRotation = rotationRef.current - currentRotMod + spins + (360 - midAngle);
+    
+    setRotation(nextRotation);
 
-    const runCycle = () => {
-      // Highlight the current item in the cycle
-      setHoveredSlice(items[currentStep % items.length].id);
-      currentStep++;
-
-      if (currentStep <= totalSteps) {
-        // Speed curve: starts fast (50ms), slows down dramatically at the end (up to ~350ms)
-        const progress = currentStep / totalSteps;
-        const nextDelay = 50 + (Math.pow(progress, 3) * 350); 
-        
-        spinIntervalRef.current = setTimeout(runCycle, nextDelay);
-      } else {
-        // Stopped perfectly on the target item
-        if (audioControlRef.current) {
-          audioControlRef.current.stop();
-          audioControlRef.current = null;
-        }
-        
-        setTimeout(() => {
-          setIsSpinning(false);
-          handleNavigation(selectedItem.href, selectedItem.id);
-        }, 800); // Dramatic pause before navigating
+    setTimeout(() => {
+      if (audioControlRef.current) {
+        audioControlRef.current.stop();
+        audioControlRef.current = null;
       }
-    };
-
-    runCycle();
+      
+      rotationRef.current = nextRotation;
+      setHoveredSlice(selectedItem.id);
+      
+      setTimeout(() => {
+        setIsSpinning(false);
+        handleNavigation(selectedItem.href, selectedItem.id);
+      }, 800); 
+    }, 4000); // Wait for 4 seconds spin animation
   };
 
   useAnimationFrame((t, delta) => {
-    if (!isNavigating) {
-      // Continue idle spin even during the lottery cycle, stop only if manually hovering
-      if (isSpinning || !isHovered) {
-        rotationRef.current += 10 * (delta / 1000);
-        setRotation(rotationRef.current);
-      }
+    if (!isNavigating && !isSpinning && !isHovered) {
+      rotationRef.current += 10 * (delta / 1000);
+      setRotation(rotationRef.current);
     }
   });
 
@@ -229,18 +218,26 @@ export default function WheelMenu() {
         transition={{ duration: 0.6, ease: [0.43, 0.13, 0.23, 0.96] }}
       />
 
+      {/* Pointer Ticker */}
+      <div className="absolute -top-6 z-50 drop-shadow-xl">
+        <div className="w-8 h-10 bg-primary" style={{ clipPath: 'polygon(50% 100%, 0 0, 100% 0)' }}></div>
+      </div>
+
       {/* SVG Donut Wheel with Drop Shadow for Depth */}
       <motion.div 
         className="absolute w-full h-full flex items-center justify-center drop-shadow-xl"
-        style={{ rotate: rotation }}
-        animate={{ opacity: isNavigating ? 0 : 1, scale: isNavigating ? 0.8 : 1 }}
-        transition={{ duration: 0.4 }}
+        animate={{ opacity: isNavigating ? 0 : 1, scale: isNavigating ? 0.8 : 1, rotate: rotation }}
+        transition={{ 
+          rotate: isSpinning ? { duration: 4, ease: [0.1, 0.9, 0.2, 1] } : { duration: 0 },
+          opacity: { duration: 0.4 },
+          scale: { duration: 0.4 }
+        }}
       >
         <svg 
           width={outerRadius * 2} 
           height={outerRadius * 2} 
           viewBox={`-${outerRadius} -${outerRadius} ${outerRadius * 2} ${outerRadius * 2}`}
-          className="overflow-visible"
+          className="overflow-visible rounded-full"
         >
           {items.map((item) => {
             const path = getSlicePath(item.startAngle + gap, item.endAngle - gap, innerRadius, outerRadius);
@@ -250,10 +247,9 @@ export default function WheelMenu() {
               <path
                 key={item.id}
                 d={path}
-                // If spinning, ignore hover effects. If selected via spin, highlight it.
-                className={`transition-all duration-300 cursor-pointer border stroke-border stroke-[3px] ${
-                  isThisHovered ? 'fill-foreground' : 'fill-card/80 hover:fill-foreground'
-                }`}
+                className={`transition-all duration-300 cursor-pointer border stroke-background stroke-[2px] ${
+                  isThisHovered ? 'fill-primary' : item.fillClass
+                } hover:fill-primary`}
                 onClick={() => !isSpinning && handleNavigation(item.href, item.id)}
                 onMouseEnter={() => !isSpinning && setHoveredSlice(item.id)}
                 onMouseLeave={() => !isSpinning && setHoveredSlice(null)}
@@ -261,41 +257,36 @@ export default function WheelMenu() {
               />
             );
           })}
-          
-          {/* Inner Circle Border */}
-          <circle cx="0" cy="0" r={innerRadius} className="fill-background stroke-border stroke-[3px]" />
         </svg>
-      </motion.div>
 
-      {/* Orbiting Icons and Texts */}
-      {items.map((item) => {
-        const midAngle = (item.startAngle + item.endAngle) / 2;
-        const currentAngle = rotation + midAngle;
-        const angleRad = (currentAngle - 90) * (Math.PI / 180);
-        
-        const midRadius = (innerRadius + outerRadius) / 2;
-        const x = Math.cos(angleRad) * midRadius;
-        const y = Math.sin(angleRad) * midRadius;
+        {/* Orbiting Icons and Texts */}
+        {items.map((item) => {
+          const midAngle = (item.startAngle + item.endAngle) / 2;
+          const angleRad = (midAngle - 90) * (Math.PI / 180);
+          
+          const midRadius = outerRadius * 0.65;
+          const x = Math.cos(angleRad) * midRadius;
+          const y = Math.sin(angleRad) * midRadius;
 
-        const isThisHovered = hoveredSlice === item.id;
-        const iconColorClass = isThisHovered ? 'text-background' : 'text-foreground';
+          const isThisHovered = hoveredSlice === item.id;
+          const iconColorClass = isThisHovered ? 'text-primary-foreground' : 'text-foreground';
 
-        return (
-          <motion.div
-            key={`content-${item.id}`}
-            className="absolute z-30 pointer-events-none flex flex-col items-center justify-center gap-2"
-            animate={{ x, y, opacity: isNavigating ? 0 : 1, scale: isNavigating ? 0.8 : 1 }}
-            transition={{ type: "tween", duration: 0.3 }}
-          >
-            <div className={`transition-colors duration-300 ${iconColorClass}`}>
-              <item.icon size={36} strokeWidth={1.5} />
+          return (
+            <div
+              key={`content-${item.id}`}
+              className="absolute z-30 pointer-events-none flex flex-col items-center justify-center gap-1"
+              style={{ transform: `translate(${x}px, ${y}px) rotate(${midAngle}deg)` }}
+            >
+              <div className={`transition-colors duration-300 ${iconColorClass}`}>
+                <item.icon size={28} strokeWidth={2} />
+              </div>
+              <span className={`text-sm font-bold tracking-wide transition-colors duration-300 ${isThisHovered ? 'text-primary-foreground' : 'text-foreground opacity-80'}`}>
+                {item.label}
+              </span>
             </div>
-            <span className={`text-base font-bold tracking-wide transition-colors duration-300 ${isThisHovered ? 'text-background opacity-100' : 'text-foreground opacity-80'}`}>
-              {item.label}
-            </span>
-          </motion.div>
-        );
-      })}
+          );
+        })}
+      </motion.div>
       
       {/* Center piece element with elevation */}
       <button 

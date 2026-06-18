@@ -9,7 +9,7 @@ import CertificateSection from './_components/CertificateSection';
 import ConnectSection from '@/components/shared/ConnectSection';
 
 export const metadata: Metadata = {
-  title: 'Developer Portfolio | Kaffa Elghifari',
+  title: 'Developer Portfolio | Syahid Alkaff',
   description: 'Explore my projects, experience, and professional journey as a developer.',
 };
 

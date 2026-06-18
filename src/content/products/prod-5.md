@@ -1,6 +1,7 @@
 ---
 id: prod-5
 title: Toddler Educational Printable Modules
+type: printable
 description: >-
   Montessori-inspired printable activity sheets to develop fine motor skills,
   alphabet recognition, and emotional intelligence.
@@ -11,7 +12,7 @@ longDescription: >-
   critical cognitive skills.
 price: $8
 thumbnailUrl: >-
-  https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=600&auto=format&fit=crop
+  /images/products/prod-5/thumbnail.png
 platformName: Etsy
 externalLink: 'https://etsy.com'
 storyHook: 'The tablet is an easy babysitter, but you know they deserve better.'

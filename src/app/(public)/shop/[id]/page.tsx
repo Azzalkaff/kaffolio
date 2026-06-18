@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation';
 import { getProductById, ProductItem, getAllProducts } from '@/lib/mdx';
-import { ArrowLeft, ShoppingCart, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, CheckCircle2, Quote } from 'lucide-react';
 import Link from 'next/link';
+import FadeIn from '@/components/shared/FadeIn';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -13,11 +14,17 @@ interface PageProps {
 function StoryHookSection({ product }: { product: ProductItem }) {
   if (!product.storyHook) return null;
   return (
-    <div className="min-h-[70vh] flex flex-col justify-center items-center text-center px-4">
-      <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-foreground leading-tight max-w-4xl tracking-tight">
-        {product.storyHook}
-      </h1>
-      <div className="mt-16 w-1 h-24 bg-gradient-to-b from-primary to-transparent opacity-50"></div>
+    <div className="min-h-[60vh] flex flex-col justify-center items-center text-center px-4 relative overflow-hidden pt-32 pb-16">
+      {/* Subtle Background Glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-primary/5 rounded-full blur-[100px] -z-10"></div>
+      
+      <FadeIn direction="up" className="max-w-5xl mx-auto flex flex-col items-center">
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-foreground leading-[1.1] tracking-tight relative z-10">
+          <span className="text-primary/40 font-serif text-5xl md:text-8xl absolute -top-8 -left-4 md:-left-12 -z-10">"</span>
+          {product.storyHook}
+          <span className="text-primary/40 font-serif text-5xl md:text-8xl absolute -bottom-12 -right-4 md:-right-12 -z-10">"</span>
+        </h1>
+      </FadeIn>
     </div>
   );
 }
@@ -28,10 +35,15 @@ function StoryHookSection({ product }: { product: ProductItem }) {
 function ProblemNarrative({ product }: { product: ProductItem }) {
   if (!product.problemStory) return null;
   return (
-    <div className="py-20 max-w-3xl mx-auto px-4 text-center space-y-8">
-      <p className="text-2xl md:text-3xl text-muted-foreground leading-relaxed font-medium">
-        {product.problemStory}
-      </p>
+    <div className="py-20 max-w-3xl mx-auto px-4">
+      <FadeIn direction="up" delay={0.2}>
+        <div className="relative bg-muted/30 border-l-4 border-primary/50 p-8 md:p-12 rounded-r-3xl rounded-bl-3xl shadow-sm group hover:bg-muted/50 transition-colors">
+          <Quote className="absolute -top-6 -left-6 w-12 h-12 text-primary/20 rotate-180 transition-transform group-hover:-translate-y-1 group-hover:-translate-x-1" />
+          <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed font-medium">
+            {product.problemStory}
+          </p>
+        </div>
+      </FadeIn>
     </div>
   );
 }
@@ -135,6 +147,59 @@ function ProductCallToAction({ product }: { product: ProductItem }) {
   );
 }
 
+/**
+ * Product Showcase: Menampilkan UI mockup produk (kertas atau iPad)
+ */
+function ProductShowcase({ product }: { product: ProductItem }) {
+  const { type, thumbnailUrl, title } = product;
+  
+  return (
+    <div className="py-20 max-w-5xl mx-auto px-4 flex justify-center">
+      <FadeIn direction="up" className="w-full max-w-3xl flex justify-center">
+        {/* Printable Paper UI */}
+        {type === 'printable' && (
+          <div className="relative w-full max-w-md aspect-[1/1.414] bg-white shadow-2xl transition-all duration-700 hover:scale-105 ring-1 ring-black/5 rounded-sm">
+            <div className="absolute inset-0 bg-gradient-to-tr from-black/[0.03] to-transparent z-10 pointer-events-none" />
+            <img 
+              src={thumbnailUrl} 
+              alt={title} 
+              className="w-full h-full object-cover relative z-0"
+            />
+          </div>
+        )}
+
+        {/* Planner iPad UI */}
+        {type === 'planner' && (
+          <div className="relative w-full aspect-[1.43/1] bg-[#1a1a1a] p-3 md:p-5 rounded-3xl md:rounded-[2rem] shadow-2xl transition-all duration-700 hover:scale-[1.02] ring-1 ring-white/10">
+            {/* Buttons */}
+            <div className="absolute top-12 -left-1.5 w-1.5 h-12 bg-[#333] rounded-l-sm" />
+            <div className="absolute top-28 -left-1.5 w-1.5 h-12 bg-[#333] rounded-l-sm" />
+            {/* Screen */}
+            <div className="relative w-full h-full bg-black rounded-xl md:rounded-2xl overflow-hidden border border-white/5">
+              <img 
+                src={thumbnailUrl} 
+                alt={title} 
+                className="w-full h-full object-cover"
+              />
+            </div>
+            {/* Camera */}
+            <div className="absolute top-1/2 left-1.5 md:left-2.5 -translate-y-1/2 w-1.5 h-1.5 md:w-2 md:h-2 bg-[#0a0a0a] rounded-full border border-white/10" />
+          </div>
+        )}
+
+        {/* Fallback UI */}
+        {(!type || (type !== 'printable' && type !== 'planner')) && (
+          <img
+            src={thumbnailUrl}
+            alt={title}
+            className="w-full max-w-2xl rounded-2xl shadow-2xl object-cover"
+          />
+        )}
+      </FadeIn>
+    </div>
+  );
+}
+
 // Generate static params so Next.js pre-renders all product pages
 export function generateStaticParams() {
   const products = getAllProducts();
@@ -169,6 +234,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       <ProblemNarrative product={product} />
       <ProductReveal product={product} mainImage={mainImage} />
       <BenefitGrid product={product} />
+      <ProductShowcase product={product} />
       <ProductCallToAction product={product} />
     </div>
   );

@@ -16,7 +16,7 @@ export default function HeroIllustration() {
       <div className="relative w-full max-w-lg aspect-square flex flex-col items-center justify-center p-8 group">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="https://api.dicebear.com/9.x/notionists/svg?seed=Kaffa&size=400"
+          src="https://api.dicebear.com/9.x/notionists/svg?seed=Syahid&size=400"
           alt="Developer Illustration"
           className="w-full h-full drop-shadow-xl transition-transform duration-700 group-hover:scale-105"
         />

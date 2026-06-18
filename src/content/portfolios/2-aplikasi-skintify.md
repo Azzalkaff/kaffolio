@@ -1,5 +1,5 @@
 ---
-id: '4'
+id: '2'
 slug: aplikasi-Skintify
 title: Skintify
 shortDescription: 'Software untuk membantu user mencari toko terbaik dari produk skincare dari beberapa marketplace.'

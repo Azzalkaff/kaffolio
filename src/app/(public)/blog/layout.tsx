@@ -9,7 +9,9 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
   return (
     <>
       <Navigation links={blogLinks} />
-      {children}
+      <div className="w-full max-w-7xl mx-auto px-4 md:px-8 lg:px-16 pt-24 pb-16">
+        {children}
+      </div>
     </>
   );
 }

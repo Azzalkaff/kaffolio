@@ -41,12 +41,12 @@
 }
 
 .dark {
-  --background: #0D1611;
+  --background: #000000;
   --foreground: #EAF2ED;
-  --card: #15221B;
+  --card: #071906;
   --card-foreground: #EAF2ED;
-  --border: #253B2D;
-  --muted: #1A2B21;
+  --border: #132b0b80;
+  --muted: #000000;
   --muted-foreground: #8FA696;
 
   /* Brand Colors untuk Dark Mode */

@@ -10,7 +10,7 @@ import MarketingGallery from './_components/MarketingGallery';
 import { getAllMarketingCampaigns } from '@/lib/mdx';
 
 export const metadata: Metadata = {
-  title: 'Digital Marketing | Kaffa Elghifari',
+  title: 'Digital Marketing | Syahid Alkaff',
   description: 'Data-driven marketing strategies, SEO, SEM, and growth campaigns.',
 };
 

@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Clock, Calendar } from 'lucide-react';
 import { getArticleBySlug, getAllArticles } from '@/lib/mdx';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export function generateStaticParams() {
   const articles = getAllArticles();
@@ -45,7 +47,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       </div>
 
       <div className="prose prose-lg max-w-none prose-headings:text-secondary prose-a:text-primary">
-        {article.content}
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {article.content || ''}
+        </ReactMarkdown>
       </div>
     </article>
   );

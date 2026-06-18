@@ -1,6 +1,7 @@
 ---
 id: prod-1
 title: Minimalist Printable Calendar 2026
+type: printable
 description: >-
   High-resolution printable monthly and yearly calendar to keep your schedule
   visually organized on your wall or desk.
@@ -11,7 +12,7 @@ longDescription: >-
   in any home office or kitchen.
 price: $6
 thumbnailUrl: >-
-  https://images.unsplash.com/photo-1506784951206-3814ee00b5cc?q=80&w=600&auto=format&fit=crop
+  /images/products/prod-1/thumbnail.png
 platformName: Etsy
 externalLink: 'https://etsy.com'
 badge: Trending

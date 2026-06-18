@@ -9,7 +9,7 @@ import CreativeServices from './_components/CreativeServices';
 import { getAllCreativeProjects } from '@/lib/mdx';
 
 export const metadata: Metadata = {
-  title: 'Creative Portfolio | Kaffa Elghifari',
+  title: 'Creative Portfolio | Syahid Alkaff',
   description: 'A visual exploration of brand identity, graphic arts, motion design, and UI/UX.',
 };
 

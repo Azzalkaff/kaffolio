@@ -37,15 +37,22 @@ export default function ShopFAQSection() {
       <StaggerContainer staggerChildren={0.15} className="space-y-6">
         {FAQS.map((faq) => (
           <StaggerItem key={faq.id}>
-            <div className="flex gap-4 p-6 bg-card border border-border/50 rounded-2xl hover:border-primary/30 transition-colors">
-              <div className="flex-shrink-0 mt-1">
-                <HelpCircle className="w-6 h-6 text-primary" />
+            <details className="group bg-card border border-border/50 rounded-2xl hover:border-primary/30 transition-colors [&_summary::-webkit-details-marker]:hidden">
+              <summary className="flex gap-4 p-6 cursor-pointer list-none items-center justify-between">
+                <div className="flex gap-4 items-center">
+                  <div className="flex-shrink-0">
+                    <HelpCircle className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-lg text-card-foreground select-none">{faq.question}</h3>
+                </div>
+                <div className="flex-shrink-0 text-muted-foreground transition-transform duration-300 group-open:-rotate-180">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+              </summary>
+              <div className="px-6 pb-6 pt-0 ml-10 text-muted-foreground leading-relaxed animate-in slide-in-from-top-2 fade-in duration-300">
+                {faq.answer}
               </div>
-              <div className="space-y-2">
-                <h3 className="font-semibold text-lg text-card-foreground">{faq.question}</h3>
-                <p className="text-muted-foreground leading-relaxed">{faq.answer}</p>
-              </div>
-            </div>
+            </details>
           </StaggerItem>
         ))}
       </StaggerContainer>

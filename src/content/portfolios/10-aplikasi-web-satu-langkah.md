@@ -1,5 +1,5 @@
 ---
-id: '1'
+id: '10'
 slug: aplikasi-Satu-Langkah
 title: Aplikasi Satu Langkah
 shortDescription: >-

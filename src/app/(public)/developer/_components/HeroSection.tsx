@@ -18,7 +18,7 @@ export default function HeroSection() {
         <div className="space-y-8 z-10">
           <FadeIn direction="up">
             <h1 className="text-4xl md:text-7xl lg:text-7xl font-black text-foreground leading-[1.1] tracking-tight">
-              Hi, I&apos;m Kaffa.<br />
+              Hi, I&apos;m Syahid.<br />
               A full-stack<br />
               developer.
             </h1>

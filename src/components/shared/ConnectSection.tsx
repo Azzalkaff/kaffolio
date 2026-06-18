@@ -8,12 +8,12 @@ import { TypewriterText } from '@/components/shared/Typewriter';
 export default function ConnectSection() {
   // TODO: Sprint 5 - Fetch Profile data from MongoDB for real email & socials
   const profile = {
-    contactEmail: 'hello@kaffaelghifari.dev',
+    contactEmail: 'syahid.alkaf07@gmail.com',
     socialLinks: {
-      github: 'https://github.com/kaffaelghifari',
-      linkedin: 'https://linkedin.com/in/kaffaelghifari',
-      threads: 'https://threads.net/@kaffadev',
-      instagram: 'https://instagram.com/kaffadev',
+      github: 'https://github.com/Azzalkaff',
+      linkedin: 'https://www.linkedin.com/in/syahid-azzam-alkaf-05b427318/',
+      threads: 'https://threads.net/@azzalkaff',
+      instagram: 'https://instagram.com/azzalkaff',
       etsy: 'https://etsy.com/shop/kaffastudio',
       fiverr: 'https://fiverr.com/kaffadev',
     },

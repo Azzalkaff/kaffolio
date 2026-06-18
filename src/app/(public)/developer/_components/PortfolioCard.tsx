@@ -92,7 +92,7 @@ export default function PortfolioCard({
             <span>{new Date(completedDate).getFullYear()}</span>
           ) : null}
           
-          {techStack.length > 0 && (
+          {techStack?.length > 0 && (
             <>
               <span className="w-1 h-1 rounded-full bg-border" />
               <span className="truncate">{techStack[0]} {techStack.length > 1 && `• ${techStack[1]}`}</span>

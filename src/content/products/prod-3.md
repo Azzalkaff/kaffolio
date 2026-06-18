@@ -1,6 +1,7 @@
 ---
 id: prod-3
 title: The Ultimate Wedding Planner Template
+type: planner
 description: >-
   Comprehensive Google Sheets template to manage guest lists, vendor contracts,
   budgets, and seating charts without the bridal breakdown.
@@ -11,7 +12,7 @@ longDescription: >-
   perfectly in sync.
 price: $18
 thumbnailUrl: >-
-  https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=600&auto=format&fit=crop
+  /images/products/prod-3/thumbnail.png
 platformName: Shopify
 externalLink: 'https://shopify.com'
 storyHook: Your dream wedding shouldn't start with a stress breakdown.

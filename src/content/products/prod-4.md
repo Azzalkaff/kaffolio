@@ -1,6 +1,7 @@
 ---
 id: prod-4
 title: Smart Financial & Wealth Planner
+type: planner
 description: >-
   Automated dashboard to track cash flow, manage debt snowballing, and project
   your early retirement timeline.
@@ -11,7 +12,7 @@ longDescription: >-
   true wealth.
 price: $14
 thumbnailUrl: >-
-  https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?q=80&w=600&auto=format&fit=crop
+  /images/products/prod-4/thumbnail.png
 platformName: Shopify
 externalLink: 'https://shopify.com'
 badge: Popular

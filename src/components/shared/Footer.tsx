@@ -57,7 +57,7 @@ export default function Footer() {
       {/* Bottom Bar */}
       <div className="max-w-[1400px] mx-auto mt-16 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
         <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider">
-          © {currentYear} Kaffa Elghifari. All rights reserved.
+          © {currentYear} Syahid Alkaff. All rights reserved.
         </p>
         <div className="flex gap-6">
           <Link href="#" className="text-xs text-zinc-500 hover:text-white uppercase tracking-wider transition-colors">Privacy Policy</Link>

@@ -12,6 +12,7 @@ export interface BenefitHighlight {
 export interface ProductItem {
   id: string;
   title: string;
+  type?: 'printable' | 'planner' | string;
   description: string;
   longDescription?: string;
   features?: string[];

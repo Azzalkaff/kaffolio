@@ -1,27 +1,21 @@
 ---
 id: prod-2
-title: ADHD Digital Brain Dump & Planner
+title: The Ultimate ADHD Digital Brain Dump & Life Planner
+type: planner
 description: >-
-  A neurodivergent-friendly digital planner designed specifically for ADHD
-  brains. No strict timelines, just dopamine-driven task completion.
+  Unlock your focus and conquer executive dysfunction with the only digital planner designed *specifically* for how your ADHD brain actually works. No rigid rules, just pure dopamine-driven productivity.
 longDescription: >-
-  Traditional planners demand a linear, rigid schedule that simply doesn't work
-  for neurodivergent brains. This ADHD-focused digital planner embraces how your
-  brain naturally works. Featuring guilt-free brain dump zones, dopamine-menu
-  trackers, and flexible non-dated pages.
-price: $15
+  Meet your brain's new best friend. This isn't just another digital PDF—it's a comprehensive, guilt-free system built specifically to harness your hyperfocus and manage the chaos. Designed for GoodNotes and iPad, it features dedicated 'Brain Dump' zones to offload racing thoughts, 'Dopamine Menus' to trick your brain into getting things done, and fully undated pages so you can pick it up anytime without the shame of empty weeks. Reclaim your time, skyrocket your productivity, and finally feel in control.
+price: $29
 thumbnailUrl: >-
-  https://images.unsplash.com/photo-1455390582262-044cdead27d8?q=80&w=600&auto=format&fit=crop
+  /images/products/prod-2/thumbnail.png
 platformName: Gumroad
 externalLink: 'https://gumroad.com'
 previewLink: 'https://goodnotes.com'
 badge: Bestseller
-storyHook: 'Traditional planners were not built for your beautiful, chaotic brain.'
+storyHook: 'Stop forcing your beautifully chaotic mind into boring, rigid boxes that only trigger guilt.'
 problemStory: >-
-  You buy a new planner, use it perfectly for three days, miss one day, feel
-  intensely guilty, and never open it again. Standard planners force you into a
-  rigid, hour-by-hour box that stifles your creativity and triggers executive
-  dysfunction.
+  How many times have you bought a "life-changing" planner, used it obsessively for 3 days, missed a single habit, felt a massive wave of guilt, and abandoned it forever? Traditional planners are designed by neurotypicals, for neurotypicals. They demand linear, hour-by-hour perfection—a surefire recipe for burnout and executive dysfunction. It's time to break the cycle.
 features:
   - Dopamine Menu Trackers
   - Hyperfocus Worksheets

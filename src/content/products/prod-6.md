@@ -1,6 +1,7 @@
 ---
 id: prod-6
 title: Healthy Meal Planner & Grocery List
+type: planner
 description: >-
   Digital GoodNotes template to plan your weekly meals, organize recipes, and
   streamline your grocery runs to save money and reduce waste.
@@ -10,7 +11,7 @@ longDescription: >-
   an organized grocery list. Never buy ingredients you already have again.
 price: $9
 thumbnailUrl: >-
-  https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=600&auto=format&fit=crop
+  /images/products/prod-6/thumbnail.png
 platformName: Gumroad
 externalLink: 'https://gumroad.com'
 previewLink: 'https://goodnotes.com'

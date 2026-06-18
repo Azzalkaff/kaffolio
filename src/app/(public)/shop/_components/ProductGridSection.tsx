@@ -19,7 +19,7 @@ export default function ProductGridSection() {
         </div>
       </FadeIn>
 
-      <StaggerContainer staggerChildren={0.15} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <StaggerContainer staggerChildren={0.15} className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16">
         {products.map((product) => (
           <StaggerItem key={product.id}>
             <ProductCard {...product} />

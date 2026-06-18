@@ -9,7 +9,7 @@ import ShopFAQSection from './_components/ShopFAQSection';
 import ConnectSection from '@/components/shared/ConnectSection';
 
 export const metadata: Metadata = {
-  title: 'Digital Products Shop | Kaffa Elghifari',
+  title: 'Digital Products Shop | Syahid Alkaff',
   description: 'Premium digital assets, UI kits, and templates for designers and developers.',
 };
 
@@ -20,9 +20,7 @@ export default function DigitalShop() {
         <ShopHeroSection />
       </SectionWrapper>
 
-      <SectionWrapper id="story-narrative" className="!pt-0 border-t-0 pb-0">
-        <ShopStoryNarrative />
-      </SectionWrapper>
+
       
       <SectionWrapper id="products" className="pt-12">
         <ProductGridSection />
